@@ -1,0 +1,28 @@
+# --- Core data ---
+pandas>=2.0
+pyarrow>=14.0
+numpy>=1.24
+
+# --- P2 ingestion (PCAP parsing helpers) ---
+tldextract>=5.0
+cryptography>=41.0
+# NB: tshark (Wireshark) must be installed separately on the system
+
+# --- P3 / EDA & plots ---
+matplotlib>=3.7
+scipy>=1.10
+
+# --- P4 / P5 features ---
+# (entropy, FFT/periodicity use numpy/scipy above)
+
+# --- P6 models ---
+scikit-learn>=1.3
+torch>=2.1          # Autoencoder / LSTM / Transformer
+shap>=0.44          # explainability
+optuna>=3.4         # hyper-parameter tuning (optional)
+
+# --- P7 app / demo ---
+streamlit>=1.30
+
+# --- dev ---
+pytest>=7.4

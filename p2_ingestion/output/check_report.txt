@@ -1,0 +1,42 @@
+[OK] aucune IP en clair dans les colonnes d'identification - {'session_id': 0, 'session_type': 0, 'dataset': 0, 'capture_start': 0, 'time_reference': 0, 'session_key': 0, 'src_ip_hash': 0, 'dst_ip_hash': 0, 'parent_inferred': 0, 'tls_intercepted': 0, 'ja3': 0, 'ja4': 0, 'ja3s': 0, 'tls_version': 0, 'cert_self_signed': 0, 'split': 0}
+[OK] colonnes src_ip / dst_ip absentes
+[OK] n_events = lignes de events.parquet
+[OK] chaque événement appartient à une session
+[OK] chaque paquet appartient à une session
+[OK] session_id unique
+[OK] DoHBrw C2 : uniquement des sessions HTTPS port 443 - 300 sessions
+[OK] DNS-EXF C2 : uniquement le domaine d'exfiltration
+[OK] aucune session bénigne vers cicresearch.ca
+       C2 cobaltstrike                           5 sessions
+       C2 dns2tcp                              100 sessions
+       C2 dns_exfil_heavy_audio                  6 sessions
+       C2 dns_exfil_heavy_compressed             5 sessions
+       C2 dns_exfil_heavy_exe                    6 sessions
+       C2 dns_exfil_heavy_image                  6 sessions
+       C2 dns_exfil_heavy_text                   5 sessions
+       C2 dns_exfil_heavy_video                  7 sessions
+       C2 dns_exfil_light_audio                  1 sessions
+       C2 dns_exfil_light_compressed             2 sessions
+       C2 dns_exfil_light_exe                    1 sessions
+       C2 dns_exfil_light_image                  1 sessions
+       C2 dns_exfil_light_text                   1 sessions
+       C2 dns_exfil_light_video                  1 sessions
+       C2 dnscat2                              100 sessions
+       C2 dridex                              1086 sessions
+       C2 iodine                               100 sessions
+       C2 menti                                  9 sessions
+       C2 murlo                                 54 sessions
+       C2 neris                               2027 sessions
+       C2 nsis.ay                               67 sessions
+       C2 rbot                                2096 sessions
+       C2 sogou                                 18 sessions
+       C2 trickbot                            2626 sessions
+       C2 virut                                635 sessions
+       bénin benign_dns                      86530 sessions
+       bénin benign_doh                       1036 sessions
+       bénin benign_https                    85890 sessions
+       bénin benign_normal_user               2558 sessions
+[OK] chaque session a un jeu
+[OK] aucun pcap dans deux jeux
+[OK] familles non vues absentes de train/val/test
+[OK] fichiers *_ids.csv = toutes les sessions, sans doublon

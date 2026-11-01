@@ -1,0 +1,144 @@
+Fichier lu : output\sessions_pcap.parquet  ->  184979 sessions, 36 colonnes
+
+======================================================================
+1. DOUBLONS
+======================================================================
+session_id en double      : 0   (attendu : 0)
+lignes entierement egales : 0   (attendu : 0)
+
+======================================================================
+2. COHERENCE DES VALEURS
+======================================================================
+label different de 0/1            : 0
+duration negative                 : 0
+ts_end < ts_start                 : 0
+n_events < 1                      : 0
+colonnes IP en clair (src_ip/dst_ip) : []
+sessions benignes dans 'unseen'   : 0   (attendu : 0)
+pcap presents dans plusieurs jeux : 0   (normal seulement pour DoHBrw malveillant, decoupe par machine)
+
+======================================================================
+3. VALEURS MANQUANTES (par type de session)
+======================================================================
+Pourcentage de valeurs manquantes :
+              server_name  parent_domain  orig_bytes  resp_bytes    ja3    ja4   ja3s  tls_version  cert_self_signed  capture_start
+session_type                                                                                                                       
+dns                 100.0            0.0       100.0       100.0  100.0  100.0  100.0        100.0             100.0            0.0
+http                100.0          100.0         0.0         0.0  100.0  100.0  100.0        100.0             100.0            0.0
+https                11.0          100.0         0.0         0.0    7.3    7.3    9.6          9.6              35.4            1.6
+
+Lecture : orig_bytes/resp_bytes vides sur 'dns' = NORMAL (ces champs ne concernent
+que HTTPS/HTTP). parent_domain vide sur 'https'/'http' = NORMAL (champ DNS).
+capture_start vide : 1469 lignes -> NORMAL si 100% Stratosphere (horodatages relatifs)
+dataset
+stratosphere-https-c2    1469
+
+======================================================================
+4. VALEURS EXTREMES (on les signale, on ne les supprime pas)
+======================================================================
+session_type        dns     http    https
+duration count  89621.0   2827.0  92531.0
+         mean      22.9    166.3    416.2
+         std      232.6    791.8    986.1
+         min        0.0      0.0      0.0
+         25%        0.0      1.7     10.7
+         50%        0.1      3.5     65.2
+         75%        0.3      5.0    176.6
+         max     3600.0  29524.0  99000.6
+n_events count  89621.0   2827.0  92531.0
+         mean       5.1      5.5      3.0
+         std      136.8     70.4     10.2
+         min        1.0      1.0      1.0
+         25%        1.0      1.0      1.0
+         50%        2.0      1.0      1.0
+         75%        2.0      1.0      3.0
+         max     7156.0   1786.0   1842.0
+
+Top 10 n_events :
+                     dataset                 family session_type  n_events     duration
+41205  cic-bell-dns-exf-2021  dns_exfil_heavy_video          dns      7156  3599.625861
+41188  cic-bell-dns-exf-2021    dns_exfil_heavy_exe          dns      7155  3599.685746
+41202  cic-bell-dns-exf-2021  dns_exfil_heavy_video          dns      7155  3599.320944
+41203  cic-bell-dns-exf-2021  dns_exfil_heavy_video          dns      7155  3599.448996
+41186  cic-bell-dns-exf-2021    dns_exfil_heavy_exe          dns      7154  3599.685309
+41206  cic-bell-dns-exf-2021  dns_exfil_heavy_video          dns      7154  3599.563754
+41207  cic-bell-dns-exf-2021  dns_exfil_heavy_video          dns      7154  3599.406079
+41187  cic-bell-dns-exf-2021    dns_exfil_heavy_exe          dns      7152  3599.307568
+41190  cic-bell-dns-exf-2021    dns_exfil_heavy_exe          dns      7152  3599.755708
+41208  cic-bell-dns-exf-2021  dns_exfil_heavy_video          dns      7150  3599.861197
+
+Top 10 duration :
+                     dataset              family session_type  n_events      duration
+120695  cira-cic-dohbrw-2020          benign_doh        https         1  99000.620660
+111373  cira-cic-dohbrw-2020          benign_doh        https         1  98401.059252
+176591                 ctu13               murlo         http         1  29524.037896
+113974  cira-cic-dohbrw-2020          benign_doh        https       217  25241.246356
+184932   stratosphere-normal  benign_normal_user        https         4  12463.682948
+184711   stratosphere-normal  benign_normal_user        https         1  12443.036975
+184805   stratosphere-normal  benign_normal_user        https         2   7262.503798
+143688  cira-cic-dohbrw-2020          benign_doh        https         2   6197.389973
+147185  cira-cic-dohbrw-2020          benign_doh        https         2   6195.452072
+131100  cira-cic-dohbrw-2020          benign_doh        https         2   6193.314300
+
+======================================================================
+5. DESEQUILIBRE C2 / BENIN ET VOLUME
+======================================================================
+Total : 176014 benins / 8965 C2  (4.85 % de C2)
+
+Par jeu :
+label    benin    c2
+split               
+test    107903  4157
+train    56154  3343
+unseen       0   221
+val      11957  1244
+
+Par dataset :
+label                  benin    c2
+dataset                           
+cic-bell-dns-exf-2021  86530    42
+cira-cic-dohbrw-2020   86926   300
+ctu13                      0  4906
+stratosphere-https-c2      0  3717
+stratosphere-normal     2558     0
+
+Par type de session :
+label         benin    c2
+session_type             
+dns           87319  2302
+http            262  2565
+https         88433  4098
+
+Benins dans 'test' : 107903  (seuil 100 000)  -> OK
+
+Jeux petits (metriques instables) :
+  val : 1244 sessions C2
+  unseen : 221 sessions C2
+
+======================================================================
+6. COLONNES AJOUTEES PAR P3
+======================================================================
+no_tls_seen = True : 6774 sessions HTTPS sans JA3
+dataset                label
+cira-cic-dohbrw-2020   0        5788
+ctu13                  1          62
+stratosphere-https-c2  1         836
+stratosphere-normal    0          88
+
+share_no_payload moyen (HTTPS/HTTP) par label :
+label
+0    0.038
+1    0.444
+
+ctu13_broad_label = True : 2260 sessions DNS CTU-13 etiquetees C2
+-> permet a P6 de tester AVEC et SANS ces sessions (filtre : ~ctu13_broad_label).
+
+is_extreme_events = True : 183 sessions (au-dessus du p99.9 de leur type)
+
+======================================================================
+7. PIEGES A SIGNALER A L'EQUIPE
+======================================================================
+- TrickBot/Dridex a 6 evenements : 1425 sessions tres repetitives, reparties sur 5 pcap -> risque de gonfler les scores.
+- DNS-EXF : 42 sessions C2 seulement contre 86530 benignes.
+- Stratosphere avec tls_intercepted=True : 2478 sessions (ignorer certificat / auto-signe / JA3S).
+- Colonnes INTERDITES comme features : src_ip_hash, dst_ip_hash, session_key, qname_truncated_share (et qname_truncated dans events).

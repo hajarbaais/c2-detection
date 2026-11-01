@@ -1,0 +1,38 @@
+# ===== Data & heavy outputs (NEVER pushed — too big / GitHub 100 MB limit) =====
+data/extracted/
+data/raw/
+**/*.parquet
+**/output/logs/
+p6_models/models/*.pt
+p6_models/models/*.pth
+p6_models/models/*.pkl
+p6_models/models/*.joblib
+p6_models/models/*.onnx
+
+# keep the small index & small reports (exceptions)
+!data/catalog_reduit.csv
+!**/check_report.txt
+!**/sessions_report.csv
+!**/*.csv
+
+# ===== Secrets (NEVER push — would de-anonymize the hashed IPs) =====
+**/secret_salt.txt
+*.env
+*.key
+
+# ===== Python =====
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+.pytest_cache/
+
+# ===== OS / editor =====
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

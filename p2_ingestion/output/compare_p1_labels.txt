@@ -1,0 +1,90 @@
+AGREE (sessions):
+  ('cic-bell-dns-exf-2021', 'dns'): 86572
+  ('cira-cic-dohbrw-2020', 'https'): 87227
+  ('ctu13', 'dns'): 2260
+  ('ctu13', 'http'): 2565
+  ('ctu13', 'https'): 81
+  ('stratosphere-https-c2', 'dns'): 628
+  ('stratosphere-https-c2', 'http'): 76
+  ('stratosphere-https-c2', 'https'): 3896
+  ('stratosphere-normal', 'dns'): 789
+  ('stratosphere-normal', 'http'): 262
+  ('stratosphere-normal', 'https'): 1507
+
+DIFF (sessions)  dataset | type | P1 | P2 | P1 family | P2 family | detail
+       15  ('cic-bell-dns-exf-2021', 'dns', 0, None, 'benign_dns', None, 'cicresearch.ca')
+       12  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_text', None, 'dns.google')
+       12  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_text', None, 'microsoft.com')
+       11  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_text', None, 'windowsupdate.com')
+        6  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_audio', None, 'dns.google')
+        6  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_audio', None, 'microsoft.com')
+        6  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_audio', None, 'windowsupdate.com')
+        6  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_compressed', None, 'dns.google')
+        6  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_compressed', None, 'microsoft.com')
+        6  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_compressed', None, 'windowsupdate.com')
+        6  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_exe', None, 'microsoft.com')
+        6  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_image', None, 'dns.google')
+        6  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_image', None, 'microsoft.com')
+        6  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_image', None, 'windowsupdate.com')
+        6  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_video', None, 'microsoft.com')
+        5  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_exe', None, 'windowsupdate.com')
+        5  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_video', None, 'windowsupdate.com')
+        4  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_text', None, 'bing.com')
+        4  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_text', None, 'live.com')
+        3  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_text', None, 'google.com')
+        3  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_text', None, 'googleapis.com')
+        3  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_light_audio', None, 'microsoft.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_audio', None, 'bing.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_audio', None, 'googleapis.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_audio', None, 'live.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_compressed', None, 'bing.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_compressed', None, 'digicert.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_compressed', None, 'live.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_exe', None, 'bing.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_image', None, 'bing.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_image', None, 'googleapis.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_image', None, 'live.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_text', None, 'digicert.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_video', None, 'digicert.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_video', None, 'googleapis.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_video', None, 'windows.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_light_audio', None, 'digicert.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_light_audio', None, 'windowsupdate.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_light_compressed', None, 'microsoft.com')
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_light_compressed', None, 'windowsupdate.com')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_audio', None, 'gstatic.com')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_audio', None, 'sfx.ms')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_compressed', None, 'googleapis.com')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_compressed', None, 'onenote.net')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_compressed', None, 'skype.com')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_exe', None, 'googleapis.com')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_exe', None, 'live.com')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_exe', None, 'msedge.net')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_exe', None, 'msftncsi.com')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_exe', None, 'onenote.net')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_exe', None, 'skype.com')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_exe', None, 'windows.com')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_image', None, 'skype.com')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_text', None, 'gstatic.com')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_text', None, 'gvt1.com')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_text', None, 'msedge.net')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_text', None, 'onenote.net')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_text', None, 'windows.com')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_video', None, 'bing.com')
+        1  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_video', None, 'live.com')
+
+DIFF totals by (dataset,type,P1,P2,fam1,fam2):
+       56  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_text', None)
+       27  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_compressed', None)
+       26  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_audio', None)
+       25  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_image', None)
+       21  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_video', None)
+       20  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_heavy_exe', None)
+       15  ('cic-bell-dns-exf-2021', 'dns', 0, None, 'benign_dns', None)
+       10  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_light_audio', None)
+        9  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_light_compressed', None)
+        4  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_light_exe', None)
+        3  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_light_text', None)
+        2  ('cic-bell-dns-exf-2021', 'dns', 1, None, 'dns_exfil_light_video', None)
+
+ERRORS: {}

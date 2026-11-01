@@ -1,0 +1,93 @@
+dataset,split_group,split,families,capture_start,n_sessions,n_c2,n_files
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/benign/benign_1.pcap,train,benign_dns,2020-11-20 13:58:38,24160,0,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/benign/benign_2.pcap,test,benign_dns,2020-11-20 23:25:08,17014,0,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/heavy/attack/heavy_audio.pcap,train,dns_exfil_heavy_audio,2020-11-22 14:52:31,6,6,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/heavy/attack/heavy_compressed.pcap,train,dns_exfil_heavy_compressed,2020-11-22 20:45:17,5,5,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/heavy/attack/heavy_exe.pcap,test,dns_exfil_heavy_exe,2020-11-24 23:18:25,6,6,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/heavy/attack/heavy_image.pcap,train,dns_exfil_heavy_image,2020-11-23 18:26:25,6,6,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/heavy/attack/heavy_text.pcap,train,dns_exfil_heavy_text,2020-11-24 00:28:00,5,5,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/heavy/attack/heavy_video.pcap,val,dns_exfil_heavy_video,2020-11-24 17:00:44,7,7,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/heavy/benign/benign_heavy_1.pcap,train,benign_dns,2020-11-22 10:52:54,11379,0,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/heavy/benign/benign_heavy_2.pcap,val,benign_dns,2020-11-23 15:06:33,9602,0,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/heavy/benign/benign_heavy_3.pcap,test,benign_dns,2020-11-24 12:07:10,13031,0,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/light/attack/light_audio.pcap,train,dns_exfil_light_audio,2020-11-21 19:13:27,1,1,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/light/attack/light_compressed.pcap,train,dns_exfil_light_compressed,2020-11-21 22:09:06,2,2,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/light/attack/light_exe.pcap,train,dns_exfil_light_exe,2020-11-21 23:51:53,1,1,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/light/attack/light_image.pcap,train,dns_exfil_light_image,2020-11-22 01:46:17,1,1,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/light/attack/light_text.pcap,val,dns_exfil_light_text,2020-11-22 02:21:39,1,1,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/light/attack/light_video.pcap,test,dns_exfil_light_video,2020-11-22 02:56:00,1,1,1
+cic-bell-dns-exf-2021,cic-bell-dns-exf-2021/pcap/light/benign/benign.pcap,train,benign_dns,2020-11-21 14:18:54,11344,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-adguard/dump_00001_20200114102945.pcap,train,"benign_doh,benign_https",2020-01-14 18:29:56,222,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-adguard/dump_00002_20200114114901.pcap,train,"benign_doh,benign_https",2020-01-14 19:49:01,280,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-adguard/dump_00003_20200114130936.pcap,train,benign_https,2020-01-14 21:09:36,256,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-adguard/dump_00004_20200114141606.pcap,val,"benign_doh,benign_https",2020-01-14 22:16:05,258,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-adguard/dump_00005_20200114153502.pcap,test,"benign_doh,benign_https",2020-01-14 23:35:02,2481,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-cloudflare/dump_00001_20200113152847.pcap,train,"benign_doh,benign_https",2020-01-13 23:28:54,382,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-cloudflare/dump_00002_20200113162614.pcap,train,"benign_doh,benign_https",2020-01-14 00:26:13,544,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-cloudflare/dump_00003_20200113182754.pcap,train,"benign_doh,benign_https",2020-01-14 02:27:54,419,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-cloudflare/dump_00004_20200113193921.pcap,val,"benign_doh,benign_https",2020-01-14 03:39:20,520,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-cloudflare/dump_00005_20200113205730.pcap,test,"benign_doh,benign_https",2020-01-14 04:57:30,4527,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-google/dump_00001_20200113100617.pcap,train,"benign_doh,benign_https",2020-01-13 18:06:54,359,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-google/dump_00002_20200113111300.pcap,train,"benign_doh,benign_https",2020-01-13 19:13:00,629,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-google/dump_00003_20200113120939.pcap,train,"benign_doh,benign_https",2020-01-13 20:09:39,448,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-google/dump_00004_20200113132407.pcap,val,"benign_doh,benign_https",2020-01-13 21:24:07,118,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-google/dump_00005_20200113142226.pcap,test,"benign_doh,benign_https",2020-01-13 22:22:26,3409,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-quad9/dump_00001_20200111222621.pcap,train,"benign_doh,benign_https",2020-01-12 06:26:30,346,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-quad9/dump_00002_20200111232233.pcap,train,"benign_doh,benign_https",2020-01-12 07:22:32,750,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-quad9/dump_00003_20200112004539.pcap,train,"benign_doh,benign_https",2020-01-12 08:45:39,549,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-quad9/dump_00004_20200112015042.pcap,train,"benign_doh,benign_https",2020-01-12 09:50:41,649,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-quad9/dump_00005_20200112025337.pcap,train,"benign_doh,benign_https",2020-01-12 10:53:37,665,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-quad9/dump_00006_20200112040340.pcap,train,"benign_doh,benign_https",2020-01-12 12:03:40,390,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-quad9/dump_00007_20200112051950.pcap,train,"benign_doh,benign_https",2020-01-12 13:19:49,420,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-quad9/dump_00008_20200112063544.pcap,val,"benign_doh,benign_https",2020-01-12 14:35:30,759,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/chrome-quad9/dump_00009_20200113074803.pcap,test,"benign_doh,benign_https",2020-01-13 15:48:03,2754,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/firefox-adguard/dump.pcap,test,"benign_doh,benign_https",2019-12-19 21:20:51,15366,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/firefox-cloudflare/dump.pcap,test,"benign_doh,benign_https",2019-12-19 21:07:04,24641,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/firefox-google/large/dump.pcap,test,"benign_doh,benign_https",2019-12-13 21:07:08,23556,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/firefox-google/medium/dump.pcap,val,"benign_doh,benign_https",2019-12-10 17:14:43,440,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/firefox-google/small/dump.pcap,train,"benign_doh,benign_https",2019-12-10 01:53:15,411,0,1
+cira-cic-dohbrw-2020,cira-cic-dohbrw-2020/pcap/benign/firefox-quad9/dump.pcap,train,"benign_doh,benign_https",2019-12-19 21:03:22,378,0,1
+cira-cic-dohbrw-2020,dohbrw-machine-doh1,train,"dns2tcp,iodine",2020-03-18 13:42:00,22,22,22
+cira-cic-dohbrw-2020,dohbrw-machine-doh1,unseen,dnscat2,2020-03-23 17:13:42,12,12,12
+cira-cic-dohbrw-2020,dohbrw-machine-doh10,train,"dns2tcp,iodine",2020-03-18 11:35:13,20,20,20
+cira-cic-dohbrw-2020,dohbrw-machine-doh10,unseen,dnscat2,2020-03-24 07:15:11,9,9,9
+cira-cic-dohbrw-2020,dohbrw-machine-doh2,test,"dns2tcp,iodine",2020-03-19 06:21:26,19,19,19
+cira-cic-dohbrw-2020,dohbrw-machine-doh2,unseen,dnscat2,2020-03-24 00:13:00,11,11,11
+cira-cic-dohbrw-2020,dohbrw-machine-doh3,train,"dns2tcp,iodine",2020-03-18 11:46:09,22,22,22
+cira-cic-dohbrw-2020,dohbrw-machine-doh3,unseen,dnscat2,2020-03-23 17:14:23,9,9,9
+cira-cic-dohbrw-2020,dohbrw-machine-doh4,unseen,dnscat2,2020-03-24 07:13:06,9,9,9
+cira-cic-dohbrw-2020,dohbrw-machine-doh4,val,"dns2tcp,iodine",2020-03-18 19:49:36,18,18,18
+cira-cic-dohbrw-2020,dohbrw-machine-doh5,train,"dns2tcp,iodine",2020-03-18 17:31:38,24,24,24
+cira-cic-dohbrw-2020,dohbrw-machine-doh5,unseen,dnscat2,2020-03-24 00:14:02,11,11,11
+cira-cic-dohbrw-2020,dohbrw-machine-doh6,train,"dns2tcp,iodine",2020-03-18 15:25:46,20,20,20
+cira-cic-dohbrw-2020,dohbrw-machine-doh6,unseen,dnscat2,2020-03-23 17:15:25,9,9,9
+cira-cic-dohbrw-2020,dohbrw-machine-doh7,test,"dns2tcp,iodine",2020-03-18 22:42:13,20,20,20
+cira-cic-dohbrw-2020,dohbrw-machine-doh7,unseen,dnscat2,2020-03-24 07:14:09,11,11,11
+cira-cic-dohbrw-2020,dohbrw-machine-doh8,train,"dns2tcp,iodine",2020-03-18 15:37:22,20,20,20
+cira-cic-dohbrw-2020,dohbrw-machine-doh8,unseen,dnscat2,2020-03-24 00:15:05,10,10,10
+cira-cic-dohbrw-2020,dohbrw-machine-doh9,train,"dns2tcp,iodine",2020-03-18 13:31:17,15,15,15
+cira-cic-dohbrw-2020,dohbrw-machine-doh9,unseen,dnscat2,2020-03-23 17:16:27,9,9,9
+ctu13,ctu13/pcap/01_neris/botnet-capture-20110810-neris.pcap,train,neris,2011-08-10 09:01:40,300,300,1
+ctu13,ctu13/pcap/02_neris/botnet-capture-20110811-neris.pcap,val,neris,2011-08-11 08:33:48,292,292,1
+ctu13,ctu13/pcap/03_rbot/botnet-capture-20110812-rbot.pcap,train,rbot,2011-08-12 12:46:11,2067,2067,1
+ctu13,ctu13/pcap/04_rbot/botnet-capture-20110815-rbot-dos.pcap,val,rbot,2011-08-15 10:13:59,5,5,1
+ctu13,ctu13/pcap/05_virut/botnet-capture-20110815-fast-flux.pcap,train,virut,2011-08-15 14:52:43,57,57,1
+ctu13,ctu13/pcap/06_menti/botnet-capture-20110816-donbot.pcap,train,menti,2011-08-16 08:09:54,9,9,1
+ctu13,ctu13/pcap/07_sogou/botnet-capture-20110816-sogou.pcap,train,sogou,2011-08-16 11:56:24,18,18,1
+ctu13,ctu13/pcap/08_murlo/botnet-capture-20110816-qvod.pcap,unseen,murlo,2011-08-16 12:24:26,54,54,1
+ctu13,ctu13/pcap/09_neris/botnet-capture-20110817-bot.pcap,test,neris,2011-08-17 12:24:30,1435,1435,1
+ctu13,ctu13/pcap/11_rbot/botnet-capture-20110818-bot-2.pcap,test,rbot,2011-08-18 13:46:56,24,24,1
+ctu13,ctu13/pcap/12_nsis.ay/botnet-capture-20110819-bot.pcap,unseen,nsis.ay,2011-08-19 08:41:48,67,67,1
+ctu13,ctu13/pcap/13_virut/botnet-capture-20110815-fast-flux-2.pcap,test,virut,2011-08-15 15:17:05,578,578,1
+stratosphere-https-c2,stratosphere-https-c2/pcap/238-1_trickbot/2017-3-30_win6.pcap,train,trickbot,2017-03-30,236,236,1
+stratosphere-https-c2,stratosphere-https-c2/pcap/325-1_trickbot/2018-01-30_win9.pcap,val,trickbot,2018-01-30,921,921,1
+stratosphere-https-c2,stratosphere-https-c2/pcap/326-1_dridex/2018-01-30_win10.pcap,train,dridex,2018-01-30,486,486,1
+stratosphere-https-c2,stratosphere-https-c2/pcap/327-1_trickbot/capture_win11.pcap,test,trickbot,,1469,1469,1
+stratosphere-https-c2,stratosphere-https-c2/pcap/345-1_cobaltstrike/2018-04-03_win11.pcap,test,cobaltstrike,2018-04-03,5,5,1
+stratosphere-https-c2,stratosphere-https-c2/pcap/346-1_dridex/2018-04-03_win12.pcap,test,dridex,2018-04-03,600,600,1
+stratosphere-normal,stratosphere-normal/pcap/normal-14/2017-07-23_capture-winFull.pcap,test,benign_normal_user,2017-07-23,1124,0,1
+stratosphere-normal,stratosphere-normal/pcap/normal-20/2017-04-30_win-normal.pcap,val,benign_normal_user,2017-04-30,260,0,1
+stratosphere-normal,stratosphere-normal/pcap/normal-23/2017-04-18_win-normal.pcap,train,benign_normal_user,2017-04-18,86,0,1
+stratosphere-normal,stratosphere-normal/pcap/normal-24/2017-04-19_win-normal.pcap,train,benign_normal_user,2017-04-19,353,0,1
+stratosphere-normal,stratosphere-normal/pcap/normal-25/2017-04-25_win-normal.pcap,train,benign_normal_user,2017-04-25,243,0,1
+stratosphere-normal,stratosphere-normal/pcap/normal-26/2017-04-28_normal.pcap,train,benign_normal_user,2017-04-28,492,0,1

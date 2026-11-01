@@ -1,0 +1,66 @@
+
+======================================================================
+E1. DOUBLONS DE CONTENU (tout sauf identifiants et horodatages)
+======================================================================
+colonnes comparees : 35
+sessions au contenu identique a une autre : 0 (0.0 %)
+Par dataset / label :
+  aucune
+
+======================================================================
+E2. UNE MEME MACHINE (src_ip_hash) DANS PLUSIEURS JEUX ?
+======================================================================
+machines distinctes : 54   presentes dans >1 jeu : 16
+split                   test  train  unseen   val
+dataset                                          
+cic-bell-dns-exf-2021  30052  46910       0  9610
+cira-cic-dohbrw-2020   36764   8230     100  2108
+ctu13                   1804   2446     120   297
+stratosphere-normal     1124   1174       0   260
+-> a signaler a P2 si ce n'est pas le cas DoHBrw (decoupe par machine attendue).
+
+======================================================================
+E3. RACCOURCI DE SOURCE : label devine avec le seul dataset
+======================================================================
+accuracy en predisant 'label majoritaire du dataset' : 99.82 %
+                       part_C2      n
+dataset                              
+cic-bell-dns-exf-2021   0.0005  86572
+cira-cic-dohbrw-2020    0.0034  87226
+ctu13                   1.0000   4906
+stratosphere-https-c2   1.0000   3717
+stratosphere-normal     0.0000   2558
+Lecture : si ce score est proche de 100 %, un modele peut reussir en reconnaissant la source
+(format du pcap, horodatage, port...) sans rien comprendre au C2. P6 doit evaluer aussi
+par dataset et ne pas se fier a un recall global.
+
+======================================================================
+E4. GRAPHIQUES COMPLEMENTAIRES
+======================================================================
+89621 sessions DNS avec entropie calculable
+label                0        1
+ent    count  87319.00  2302.00
+       mean       2.08     2.24
+       std        0.84     0.78
+       min       -0.00    -0.00
+       25%        1.40     1.82
+       50%        2.00     2.32
+       75%        2.81     2.81
+       max        4.59     3.77
+taille count  87319.00  2302.00
+       mean      74.15    79.03
+       std        4.28    31.41
+       min       64.00    60.00
+       25%       71.00    71.00
+       50%       74.00    74.00
+       75%       76.67    78.00
+       max      122.73   309.00
+n      count  87319.00  2302.00
+       mean       2.17   115.41
+       std        6.42   845.58
+       min        1.00     1.00
+       25%        1.00     2.00
+       50%        2.00     2.00
+       75%        2.00     4.00
+       max      656.00  7156.00
+2 graphiques ecrits dans p3_output\graphs

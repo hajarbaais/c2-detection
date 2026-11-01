@@ -1,0 +1,34 @@
+POUR P1 : extraire les journaux des PCAP complets (au lieu d'envoyer 8,6 Go à P2)
+================================================================================
+
+Ma connexion est trop lente pour télécharger les PCAP (~85 Ko/s, plus de 24 h).
+Ce script fait chez toi l'étape 1 de P2 (lecture des PCAP avec tshark) et produit un petit zip
+(~1 % de la taille des PCAP, environ 50 à 100 Mo) que tu me renvoies.
+
+Il faut sur ta machine
+----------------------
+  - Wireshark 4.2 ou plus récent (installé dans C:\Program Files\Wireshark) : tshark + editcap
+  - Python 3.10 ou plus récent (cocher "Add python to PATH" à l'installation)
+  - ~6 Go libres en plus des PCAP (le gros fichier firefox est découpé temporairement)
+
+Les PCAP à avoir dans un même dossier (sous-dossiers acceptés, comme dans le SwissTransfer)
+-------------------------------------------------------------------------------------
+  chrome-quad9/dump_00009_20200113074803.pcap        645 Mo
+  chrome-google/dump_00005_20200113142226.pcap       636 Mo
+  chrome-cloudflare/dump_00005_20200113205730.pcap   954 Mo
+  chrome-adguard/dump_00005_20200114153502.pcap      ~1 Go
+  firefox-google/large/dump.pcap                     ~4,7 Go
+  (normal-14 : inutile, je l'ai déjà)
+
+Commande (PowerShell, dans ce dossier)
+--------------------------------------
+  powershell -ExecutionPolicy Bypass -File lancer.ps1 -Pcaps "D:\chemin\vers\le\dossier\des\pcap"
+
+  - La 1re fois, il installe pandas / pyarrow / cryptography (1-2 min).
+  - Il vérifie chaque fichier (sha256 du catalogue), puis l'extrait. Compter ~15 à 40 min au total.
+  - À la fin il affiche :  "Terminé. À envoyer à P2 : ...\logs_P2.zip (xx Mo)"
+
+Envoie-moi logs_P2.zip (WhatsApp / SwissTransfer, uniquement dans l'équipe :
+il contient des adresses IP en clair). Aucun autre fichier n'est modifié chez toi.
+
+Si un fichier affiche "[absent]" ou "sha256 différent" : il manque ou il est incomplet, dis-le-moi.

@@ -1,0 +1,66 @@
+
+======================================================================
+A1. share_no_payload : part de connexions sans donnees (HTTPS/HTTP)
+======================================================================
+                             count   mean  median
+dataset               label                      
+cira-cic-dohbrw-2020  0      86926  0.037     0.0
+                      1        300  0.000     0.0
+ctu13                 1       2646  0.801     1.0
+stratosphere-https-c2 1       3717  0.226     0.0
+stratosphere-normal   0       1769  0.075     0.0
+
+Lecture : si l'ecart bénin/C2 n'existe que dans CTU-13, ce n'est pas un signal general.
+
+======================================================================
+A2. ctu13_broad_label : DNS banal de la machine infectee (CTU-13)
+======================================================================
+Sessions CTU-13 par type :
+session_type
+dns      2260
+http     2565
+https      81
+
+Sessions DNS CTU-13 marquees C2 : 2260
+Domaines les plus frequents (ce sont des sites ordinaires = DNS banal) :
+parent_domain
+147.in-addr.arpa    18
+google.com          14
+dmy2.com            12
+wpad                11
+yahoo.com            9
+nocomcom.com         8
+coolnuff.com         8
+sun.com              8
+yieldmanager.com     7
+advertising.com      7
+
+DNS C2 : combien viennent de CTU-13 et combien de vrais tunnels (DNS-EXF) ?
+dataset
+cic-bell-dns-exf-2021      42
+ctu13                    2260
+
+DNS C2 dans le jeu TEST, avec et sans CTU-13 :
+  avec CTU-13 : 1811   sans CTU-13 : 7
+
+======================================================================
+B. ECHANTILLON POUR VERIFIER LES LABELS
+======================================================================
+354 sessions tirees (20 max par dataset x famille, graine 42)
+255204 evenements lus pour ces sessions
+
+Avis automatique par dataset :
+avis                   A REGARDER  CONVENTION   OK
+dataset                                           
+cic-bell-dns-exf-2021           0           0   62
+cira-cic-dohbrw-2020            0           0  100
+ctu13                           0          65   62
+stratosphere-https-c2          13           0   32
+stratosphere-normal             2           0   18
+
+OK = coherent. A REGARDER / CONVENTION = a juger par toi dans le CSV.
+
+======================================================================
+C. GRAPHIQUES
+======================================================================
+6 graphiques ecrits dans p3_output\graphs

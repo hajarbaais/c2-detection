@@ -1,0 +1,7 @@
+file,status,n_packets,n_conn,n_dns,n_ssl,n_x509,n_pkts,seconds
+cira-cic-dohbrw-2020/pcap/benign/chrome-quad9/dump_00009_20200113074803.pcap,ok,768516,6408,0,6122,3252,519512,93.3
+cira-cic-dohbrw-2020/pcap/benign/chrome-google/dump_00005_20200113142226.pcap,ok,862354,7754,0,7364,4439,567407,79.8
+cira-cic-dohbrw-2020/pcap/benign/chrome-cloudflare/dump_00005_20200113205730.pcap,ok,1222446,10072,0,9750,5529,820132,121.2
+cira-cic-dohbrw-2020/pcap/benign/chrome-adguard/dump_00005_20200114153502.pcap,ok,1133369,5967,0,5648,3474,757120,109.3
+cira-cic-dohbrw-2020/pcap/benign/firefox-google/large/dump.pcap,ok,5058773,65890,0,64035,34559,2770502,499.4
+stratosphere-normal/pcap/normal-14/2017-07-23_capture-winFull.pcap,ok,548883,3698,1659,2828,1542,353374,48.8
