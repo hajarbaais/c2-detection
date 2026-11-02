@@ -20,6 +20,10 @@ p6_models/models/*.onnx
 *.env
 *.key
 
+# ===== Generated feature outputs (regenerable, not pushed) =====
+p4_features_dns_time/output/
+p5_features_tls_seq/output/
+
 # ===== Python =====
 .venv/
 venv/
