@@ -9,7 +9,34 @@ import math
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import average_precision_score, roc_auc_score
+
+# ROC-AUC et PR-AUC calculées avec numpy/pandas (sans scikit-learn) : le module reste
+# importable même sur un poste où les DLL de scikit-learn sont bloquées (Smart App Control).
+
+
+def roc_auc_score(y_true, scores) -> float:
+    """ROC-AUC = probabilité qu'un C2 tiré au hasard ait un score > un bénin tiré au hasard.
+
+    Formule de Mann-Whitney avec rangs moyens (ex-aequo comptés pour 1/2), identique à sklearn.
+    """
+    y = np.asarray(y_true).astype(int)
+    ranks = pd.Series(np.asarray(scores, dtype=float)).rank(method="average").to_numpy()
+    n_pos, n_neg = int(y.sum()), int((y == 0).sum())
+    return float((ranks[y == 1].sum() - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg))
+
+
+def average_precision_score(y_true, scores) -> float:
+    """PR-AUC (average precision) = somme de (gain de recall) x (précision) à chaque seuil distinct."""
+    y = np.asarray(y_true).astype(int)
+    s = np.asarray(scores, dtype=float)
+    order = np.argsort(-s, kind="mergesort")
+    y, s = y[order], s[order]
+    last = np.r_[np.flatnonzero(np.diff(s)), y.size - 1]     # dernier indice de chaque seuil distinct
+    tp = np.cumsum(y)[last]
+    fp = (last + 1) - tp
+    precision = tp / (tp + fp)
+    recall = tp / y.sum()
+    return float(np.sum(np.diff(np.r_[0.0, recall]) * precision))
 
 
 def wilson_ci(k: int, n: int, z: float = 1.96) -> tuple[float, float]:

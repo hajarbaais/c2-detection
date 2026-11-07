@@ -34,6 +34,12 @@ class TestMetrics:
         m = binary_metrics([0, 0, 1, 1], [0, 0, 1, 1], scores=[0.1, np.nan, 0.8, 0.9])
         assert m["roc_auc"] == 1.0
 
+    def test_auc_known_value(self):
+        from metrics import average_precision_score, roc_auc_score
+        y, s = [0, 0, 1, 1], [0.1, 0.4, 0.35, 0.8]
+        assert roc_auc_score(y, s) == pytest.approx(0.75)        # 3 paires C2 > bénin sur 4
+        assert average_precision_score(y, s) == pytest.approx((1 + 2 / 3) / 2)
+
     def test_wilson(self):
         lo, hi = wilson_ci(0, 100_000)
         assert lo == 0.0 and hi < 0.0001          # 0 FP sur 100 000 -> FPR < 0,01 % à 95 %
@@ -115,6 +121,7 @@ def test_nan_feature_never_alerts():
 
 # --------------------------------------------------------------------------- Isolation Forest
 def test_iforest_separates_toy_data():
+    pytest.importorskip("sklearn.ensemble", reason="scikit-learn indisponible (DLL bloquée ?)", exc_type=ImportError)
     from p6_02_isolation_forest import score, train_iforest
     df = _toy(n_benign=2000, n_c2=100)
     b = train_iforest(df, "dns")
@@ -125,6 +132,7 @@ def test_iforest_separates_toy_data():
 
 
 def test_iforest_trains_on_benign_only():
+    pytest.importorskip("sklearn.ensemble", reason="scikit-learn indisponible (DLL bloquée ?)", exc_type=ImportError)
     from p6_02_isolation_forest import train_iforest
     df = _toy()
     b1 = train_iforest(df, "web")
