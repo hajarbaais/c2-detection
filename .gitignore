@@ -8,6 +8,13 @@ p6_models/models/*.pth
 p6_models/models/*.pkl
 p6_models/models/*.joblib
 p6_models/models/*.onnx
+p6_models/models/*.json
+p6_models/output/
+
+# ===== MLflow (local tracking, never pushed) =====
+mlflow.db
+mlruns/
+mlartifacts/
 
 # keep the small index & small reports (exceptions)
 !data/catalog_reduit.csv
