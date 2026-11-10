@@ -29,17 +29,21 @@ OUT_DIR = Path(__file__).resolve().parents[1] / "output"
 def main():
     print(f"[1/4] lecture sessions depuis {P2_OUT}")
     se = pd.read_parquet(P2_OUT / "sessions_pcap.parquet",
-                         columns=["session_id", "session_key", "window_idx", "n_events", "family", "label"])
+                         columns=["session_id", "file", "session_key", "window_idx", "n_events", "family", "label"])
 
-    print("[2/4] agregation par session_key (recollage des fenetres 1 h et 6 h)...")
-    g = se.groupby("session_key")
+    # IMPORTANT : window_idx repart de 0 dans CHAQUE pcap, et une meme session_key existe dans
+    # plusieurs pcaps (16 471 cas). On regroupe donc par (file, session_key), jamais par cle seule,
+    # sinon des captures differentes sont melangees.
+    KEY = ["file", "session_key"]
+    print("[2/4] agregation par (file, session_key) : recollage des fenetres 1 h et 6 h...")
+    g = se.groupby(KEY)
     persist = g["window_idx"].nunique()
     span = g["window_idx"].max() - g["window_idx"].min() + 1
     ev_total = g["n_events"].sum()
 
     # pic d'activite sur 6 h : on regroupe les heures en blocs de 6 (window_idx // 6)
     se["block6"] = se["window_idx"] // 6
-    max6 = se.groupby(["session_key", "block6"])["n_events"].sum().groupby("session_key").max()
+    max6 = se.groupby(KEY + ["block6"])["n_events"].sum().groupby(KEY).max()
 
     key_feat = pd.DataFrame({
         "dns_persist_hours": persist,
@@ -50,8 +54,8 @@ def main():
     key_feat["dns_coverage"] = key_feat["dns_persist_hours"] / key_feat["dns_span_hours"]
     key_feat = key_feat.reset_index()
 
-    # chaque session recoit les mesures de sa cle
-    out = se[["session_id", "session_key"]].merge(key_feat, on="session_key", how="left").drop(columns="session_key")
+    # chaque session recoit les mesures de sa cle (propre a son pcap)
+    out = se[["session_id"] + KEY].merge(key_feat, on=KEY, how="left").drop(columns=KEY)
 
     print("[3/4] fusion dans features_dns.parquet...")
     feat_path = OUT_DIR / "features_dns.parquet"
@@ -62,8 +66,8 @@ def main():
     print(f"[4/4] {len(merged):,} sessions, {merged.shape[1]} colonnes -> {feat_path}")
 
     # verification : la continuite (coverage) et le span separent-ils C2 persistant / benin ?
-    chk = key_feat.merge(se.groupby("session_key").agg(family=("family", "first"), label=("label", "first")).reset_index(),
-                         on="session_key")
+    chk = key_feat.merge(se.groupby(KEY).agg(family=("family", "first"), label=("label", "first")).reset_index(),
+                         on=KEY)
     multi = chk[chk["dns_persist_hours"] >= 2]
     print("\nverification (cles actives >= 2 h, mediane par famille) :")
     top = multi.groupby(["label", "family"]).agg(

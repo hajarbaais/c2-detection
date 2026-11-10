@@ -85,7 +85,7 @@ def main():
     _self_test()
 
     print(f"[1/5] lecture sessions + horodatages depuis {P2_OUT}")
-    se = pd.read_parquet(P2_OUT / "sessions_pcap.parquet", columns=["session_id", "session_type", "label"])
+    se = pd.read_parquet(P2_OUT / "sessions_pcap.parquet", columns=["session_id", "session_type", "label", "family"])
     dns_sessions = set(se.loc[se.session_type == "dns", "session_id"])
 
     ev = pd.read_parquet(P2_OUT / "events.parquet", columns=["session_id", "event_type", "ts"])
