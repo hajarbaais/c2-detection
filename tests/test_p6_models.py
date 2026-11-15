@@ -152,7 +152,7 @@ def test_pipeline_end_to_end_on_toy(tmp_path):
     feats_path = tmp_path / "features_dns.parquet"
     df[["session_id"] + [c for c in df.columns if c.startswith("dns_")]].to_parquet(feats_path)
 
-    pipe = C2Pipeline(models_dir=tmp_path)                 # pas de modèle -> règles seules
+    pipe = C2Pipeline(models_dir=tmp_path, p5_dir=None)    # pas de modèle -> règles seules
     feats = pipe.features(sessions, feats_path)
     assert len(feats) == len(sessions)                      # contrat : jointure gauche
     v = pipe.verdict(pipe.score(feats))
@@ -160,7 +160,7 @@ def test_pipeline_end_to_end_on_toy(tmp_path):
     assert v.loc[df.label == 1, "alert"].mean() == 1.0
     alerts = pipe.alerts(feats, v)
     assert len(alerts) == int(v["alert"].sum())
-    assert {"session_id", "score", "detectors", "mitre_technique"} <= set(alerts[0])
+    assert {"session_id", "scores", "detectors", "mitre_technique"} <= set(alerts[0])
     assert "load_models" in pipe.timings
 
 

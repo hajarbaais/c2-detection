@@ -5,7 +5,7 @@ Utilisé par p6_01_rule_baselines.py, p6_02_isolation_forest.py et p7_app_demo/p
 Données lues :
     <P2>/sessions_pcap.parquet                       labels, split, session_type, volumes bruts
     p4_features_dns_time/output/features_dns.parquet  features de Hajar (P4)
-    (plus tard) p5_features_tls_seq/output/...        features d'Imane (P5) -> ajouter dans load_features()
+    <P5>/features_tls.parquet (option)               features TLS d'Imane (P5), groupe web -> p6_tls.py
 """
 from __future__ import annotations
 
@@ -46,8 +46,11 @@ def p2_dir(arg: str | None) -> Path:
     return Path(arg or os.environ.get("C2_P2_DIR") or DEFAULT_P2)
 
 
-def load_dataset(p2: Path, features_path: Path = P4_FEATURES) -> pd.DataFrame:
-    """1 ligne par session : métadonnées P2 + features P4 (jointure GAUCHE sur session_id).
+def load_dataset(p2: Path, features_path: Path = P4_FEATURES, p5: Path | str | None = None) -> pd.DataFrame:
+    """1 ligne par session : métadonnées P2 + features P4 (+ P5 si `p5`) (jointure GAUCHE sur session_id).
+
+    Avec `p5` : ajoute les 14 colonnes p5_* et recalcule rareté JA3/JA4 + réputation sur le BÉNIN du
+    train web (p6_tls.py) ; la référence apprise est dans df.attrs["tls_reference"].
 
     Jointure gauche : ~7 200 sessions web sans paquet de charge utile n'ont aucune ligne dans
     features_dns.parquet ; elles restent dans le jeu (features à NaN) au lieu de disparaître.
@@ -58,11 +61,21 @@ def load_dataset(p2: Path, features_path: Path = P4_FEATURES) -> pd.DataFrame:
     feats = pd.read_parquet(features_path)
     df = sessions.merge(feats, on="session_id", how="left", validate="one_to_one")
     df["group"] = df["session_type"].map({t: g for g, ts in GROUPS.items() for t in ts})
+    if p5:
+        from p6_tls import apply_tls_reference, fit_tls_reference, merge_p5
+        df = merge_p5(df, p5)
+        ref = fit_tls_reference(df)
+        df = apply_tls_reference(df, ref)
+        df.attrs["tls_reference"] = ref
     return df
 
 
-def feature_columns(df: pd.DataFrame, group: str) -> list[str]:
-    """Colonnes numériques autorisées pour un groupe (dns -> features dns_* ; web -> volumes + rythme)."""
+def feature_columns(df: pd.DataFrame, group: str, with_p5: bool = False) -> list[str]:
+    """Colonnes numériques autorisées pour un groupe (dns -> features dns_* ; web -> volumes + rythme).
+
+    with_p5=True (web) : les volumes bruts de P2 sont remplacés par les 14 features TLS de P5
+    (mêmes colonnes que l'autoencodeur d'Oumaima).
+    """
     p4 = [c for c in df.columns if c.startswith("dns_") and c not in FORBIDDEN]
     if group == "dns":
         cols = p4 + ["duration", "n_events"]
@@ -70,7 +83,13 @@ def feature_columns(df: pd.DataFrame, group: str) -> list[str]:
         # pour le web, les features de contenu DNS sont toujours vides : on garde rythme + fenêtres
         rythm = [c for c in p4 if any(k in c for k in ("iat", "period", "persist", "span",
                                                         "events_per_hour", "max_events", "coverage"))]
-        cols = rythm + SESSION_NUMERIC
+        if with_p5:
+            from p6_tls import P5_FEATS
+            missing = [c for c in P5_FEATS if c not in df.columns]
+            assert not missing, f"features P5 absentes (charger avec load_dataset(..., p5=...)) : {missing}"
+            cols = rythm + P5_FEATS
+        else:
+            cols = rythm + SESSION_NUMERIC
     cols = [c for c in cols if c in df.columns and pd.api.types.is_numeric_dtype(df[c])]
     assert not (set(cols) & FORBIDDEN), "colonne interdite dans les features"
     return cols

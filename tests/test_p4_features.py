@@ -127,9 +127,7 @@ def test_p4_01_02_03_05_run_without_error(p4_run):
         assert errors[k] is None, f"p4_{k} a levé {errors[k]!r}"
 
 
-@pytest.mark.xfail(strict=True, reason="BUG p4_04 : la vérification finale fait groupby('family') alors que "
-                                        "sessions_pcap est lu sans la colonne 'family' -> KeyError. "
-                                        "Correctif : ajouter 'family' dans columns=[...] ligne 'se = pd.read_parquet'.")
+# Bug p4_04 (family manquant) corrigé par Hajar (commit 42a089c) : test devenu normal.
 def test_p4_04_runs_without_error(p4_run):
     _, errors = p4_run
     assert errors["04"] is None, repr(errors["04"])
@@ -205,9 +203,7 @@ def test_windows_multi_hour_key_same_pcap(p4_run):
     assert f.loc["winA1", "dns_persist_hours"] >= 2
 
 
-@pytest.mark.xfail(strict=True, reason="BUG p4_05 : regroupe par session_key seule ; la même clé existe dans "
-                                        "plusieurs pcaps (16 471 clés sur les vraies données) et window_idx "
-                                        "est relatif à chaque pcap. Correctif : groupby(['file', 'session_key']).")
+# Bug p4_05 (session_key seule) corrigé par Hajar (commit 42a089c) : test devenu normal.
 def test_windows_do_not_mix_pcaps(p4_run):
     f, _ = p4_run
     assert f.loc["winB0", "dns_persist_hours"] == 1          # B n'a qu'une fenêtre

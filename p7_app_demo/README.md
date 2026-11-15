@@ -15,18 +15,21 @@ extract(pcap) -> sessionize(logs) -> features(sessions) -> score(df) -> verdict(
 ```
 
 ```bash
-python -I p7_app_demo/pipeline.py --p2 <dossier output P2> [--limit 5000]
+python -I p7_app_demo/pipeline.py --p2 <dossier output P2> --p5 <dossier p5_output> [--limit 5000]
 ```
 
 | Étape | État |
 |---|---|
-| chargement des modèles une seule fois | ✅ règles calibrées + Isolation Forest |
-| `features` | ✅ relit `features_dns.parquet` (jointure gauche) — TODO : calcul en mémoire, + P5 |
-| `score` / `verdict` | ✅ règles + IF, verdict = au moins un détecteur — TODO S3 : AE, LSTM, fusion |
+| chargement des modèles une seule fois | ✅ règles calibrées + Isolation Forest + autoencodeur (`autoencoder.pt`) + référence TLS |
+| `features` | ✅ P4 (`features_dns.parquet`) + P5 (`features_tls.parquet`, rareté/réputation recalculées avec `tls_reference.joblib`) — TODO : calcul en mémoire |
+| `score` / `verdict` | ✅ règles + IF + AE (`ae_score`, `ae_alert`), verdict = au moins un détecteur — TODO S3 : LSTM, fusion |
 | `alerts` | ✅ format provisoire — TODO S3 : schéma JSON + MITRE (Salma), SHAP (Farah) |
 | `extract` / `sessionize` sur un PCAP | ⏳ `NotImplementedError` — brancher les scripts P2 |
 
-Mesure actuelle (184 979 sessions, hors extraction) : ~3 s au total, ~0,3 s pour 2 000 sessions.
+Un détecteur dont le fichier manque (ou dont les colonnes P5 manquent) est ignoré avec un message, sans erreur.
+
+Mesure actuelle (184 979 sessions, hors extraction, CPU) : ~3,9 s au total dont 2,0 s de chargement des modèles
+(une seule fois) ; sur les 184 979 sessions : 155 alertes règles, 539 IF, 5 826 AE (6 087 au total, 2 597 vrais C2).
 
 ## Démo
 Montrer un cas **normal** et un cas **suspect**, avec l'explication SHAP de la décision.
