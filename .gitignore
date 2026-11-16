@@ -48,3 +48,4 @@ desktop.ini
 .vscode/
 .idea/
 p6_models/models/*.pt
+/output/

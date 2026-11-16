@@ -1,0 +1,24 @@
+# P7.6 - Lancement : depuis p7_app_demo/docker/ :  docker compose build  puis  docker compose up
+name: c2-detection
+services:
+  c2:
+    build:
+      context: ../..                                   # racine du dépôt
+      dockerfile: p7_app_demo/docker/Dockerfile
+      args:
+        ZEEK_VERSION: ${ZEEK_VERSION:-8.0.9}
+    image: c2-detection:0.1
+    volumes:
+      - ../../data/pcaps:/data/pcaps:ro                # captures (non versionnées), en lecture seule
+      - ../../p6_models/models:/app/p6_models/models:ro   # modèles (autoencoder.pt...), non versionnés
+      - ../../output:/output                           # journaux Zeek et résultats
+    environment:
+      - PCAP=${PCAP:-}
+    command: ["bash", "p7_app_demo/docker/smoke_test.sh"]
+
+  # Tableau de bord Streamlit : à activer quand dashboard/app.py existera (P7.5)
+  # dashboard:
+  #   image: c2-detection:0.1
+  #   ports: ["8501:8501"]
+  #   volumes: [ "../../p6_models/models:/app/p6_models/models:ro" ]
+  #   command: ["streamlit", "run", "dashboard/app.py", "--server.address=0.0.0.0"]
