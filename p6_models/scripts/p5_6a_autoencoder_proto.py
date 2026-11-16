@@ -1,5 +1,7 @@
 """P5.6a - Prototype d'autoencodeur (PyTorch) entraîné sur un ÉCHANTILLON du trafic bénin.
 
+Auteures : Oumaima (conception et code de l'autoencodeur), Wassima (intégration P6 / P7).
+
 But du prototype : vérifier que l'architecture, le prétraitement, le seuil et l'évaluation
 fonctionnent de bout en bout, avec les mêmes règles que Wassima (P6.1 / P6.2) pour que les
 résultats soient comparables à l'Isolation Forest.
