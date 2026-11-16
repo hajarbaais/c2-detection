@@ -103,7 +103,7 @@ python -I p6_models/scripts/p5_6a_autoencoder_proto.py \
 ```
 
 Les données ne sont pas versionnées (trop volumineuses). Sorties : `p6_models/output/` (gitignoré).
-Version de PyTorch utilisée : 2.15.0+cpu.
+Version de PyTorch utilisée : `2.15.0`.
 
 ## 9. Suite (P5.6b)
 

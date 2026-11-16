@@ -201,7 +201,11 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db
 ```
 
 Sorties : `p6_models/models/autoencoder.pt` (non versionné, à partager par Drive), `p6_models/evaluation/autoencoder_metrics.csv`,
-`autoencoder_by_family.csv`. Version de PyTorch : `<à compléter>`.
+`autoencoder_by_family.csv`. Version de PyTorch : `2.15.0`.
+
+# expérience de redécoupage du bénin web (sorties suffixées _resplit)
+python -I p6_models/scripts/p5_6b_autoencoder_train.py ... --run-name ae_resplit --resplit-benign-web 
+
 
 ## 9. Utilisation dans le pipeline (P7)
 

@@ -1,0 +1,18 @@
+# Données, modèles et résultats : jamais dans l'image (montés en volumes)
+.git
+data/
+output/
+mlruns/
+mlflow.db
+p6_models/output/
+**/*.parquet
+**/*.pcap
+**/*.pcapng
+**/*.pt
+**/*.pth
+**/*.pkl
+**/*.joblib
+**/*.npz
+**/*.zip
+**/__pycache__/
+.pytest_cache/
