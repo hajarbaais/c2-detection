@@ -1,5 +1,7 @@
 """P5.6b - Entraînement complet de l'autoencodeur sur le trafic BÉNIN, suivi dans MLflow.
 
+Auteures : Oumaima (conception et code de l'autoencodeur), Wassima (intégration P6 / P7).
+
 Réutilise le prototype P5.6a (prétraitement, architecture, boucle d'entraînement) et ajoute :
   - entraînement sur TOUT le bénin du train (--sample-frac 1 par défaut) ;
   - ja3_rarity, ja4_rarity et log_domain_reputation (P5) RECALCULÉS sur le bénin du train seul

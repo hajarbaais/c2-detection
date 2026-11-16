@@ -5,7 +5,9 @@ Principe : on apprend UNIQUEMENT le trafic bénin du train. Une session « facil
 
 Un modèle par groupe de trafic (features différentes) :
   dns : features de contenu DNS (entropie, forme, NXDOMAIN...) + rythme + fenêtres longues
-  web : rythme (IAT, périodicité, fenêtres) + volumes bruts de P2 (en attendant les features P5)
+  web : rythme (IAT, périodicité, fenêtres) + volumes bruts de P2
+        ou, avec --p5, rythme + 14 features TLS de P5 (rareté / réputation recalculées sur le bénin
+        du train web, voir p6_tls.py ; référence sauvegardée dans models/tls_reference.joblib)
 
 Seuil : choisi sur le BÉNIN DE VALIDATION pour 0,1 % de FPR (le test n'est jamais regardé).
 Évaluation : val, test, et « unseen » (familles jamais vues : recall seulement).
@@ -19,7 +21,8 @@ Sorties :
   p6_models/evaluation/iforest_by_family.csv      recall / FPR par famille (test)
   p6_models/output/iforest_scores.parquet         score par session (gitignoré)
 
-Usage : python -I p6_02_isolation_forest.py [--p2 DOSSIER_OUTPUT_P2] [--supervised] [--no-mlflow]
+Usage : python -I p6_02_isolation_forest.py [--p2 DOSSIER_OUTPUT_P2] [--p5 DOSSIER_P5_OUTPUT]
+                                            [--supervised] [--no-mlflow]
 """
 import argparse
 import sys
@@ -35,15 +38,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "evaluation"))
 from p6_common import (EVAL_DIR, GROUPS, MODELS_DIR, RANDOM_STATE, REPO, TARGET_FPR,  # noqa: E402
                        feature_columns, git_commit, load_dataset, p2_dir, setup_mlflow, to_matrix)
+from p6_tls import save_reference  # noqa: E402
 from metrics import binary_metrics, metrics_by, threshold_at_fpr  # noqa: E402
 
 IF_PARAMS = dict(n_estimators=300, max_samples=256, contamination="auto", random_state=RANDOM_STATE, n_jobs=-1)
 HGB_PARAMS = dict(max_iter=300, learning_rate=0.1, class_weight="balanced", random_state=RANDOM_STATE)
 
 
-def train_iforest(df: pd.DataFrame, group: str) -> dict:
+def train_iforest(df: pd.DataFrame, group: str, with_p5: bool = False) -> dict:
     """Entraîne l'IF du groupe sur le bénin du train, calibre le seuil sur le bénin de val."""
-    cols = feature_columns(df, group)
+    cols = feature_columns(df, group, with_p5)
     g = df[df["group"] == group]
     train_benign = g[(g["split"] == "train") & (g["label"] == 0)]
     val_benign = g[(g["split"] == "val") & (g["label"] == 0)]
@@ -61,8 +65,8 @@ def score(bundle: dict, df: pd.DataFrame) -> np.ndarray:
     return -bundle["model"].score_samples(to_matrix(df, bundle["columns"]))
 
 
-def train_supervised(df: pd.DataFrame, group: str) -> dict:
-    cols = feature_columns(df, group)
+def train_supervised(df: pd.DataFrame, group: str, with_p5: bool = False) -> dict:
+    cols = feature_columns(df, group, with_p5)
     g = df[df["group"] == group]
     tr, va = g[g["split"] == "train"], g[(g["split"] == "val") & (g["label"] == 0)]
     model = HistGradientBoostingClassifier(**HGB_PARAMS).fit(tr[cols].astype("float64"), tr["label"])
@@ -86,13 +90,13 @@ def evaluate(df, scores, preds, name) -> list[dict]:
     return rows
 
 
-def run(df, kind, mlflow):
+def run(df, kind, mlflow, with_p5=False):
     fit, sc_fn = (train_iforest, score) if kind == "iforest" else (train_supervised, score_supervised)
     scores = np.full(len(df), np.nan)
     preds = np.zeros(len(df), dtype=bool)
     bundles = {}
     for group in GROUPS:
-        b = fit(df, group)
+        b = fit(df, group, with_p5)
         m = (df["group"] == group).to_numpy()
         scores[m] = sc_fn(b, df[m])
         preds[m] = scores[m] > b["threshold"]
@@ -105,7 +109,8 @@ def run(df, kind, mlflow):
     if mlflow:
         with mlflow.start_run(run_name=kind):
             mlflow.set_tags({"lot": "P6", "task": "P6.2", "author": "wassima", "git_commit": git_commit(),
-                             "features": "p4_features_dns + volumes P2"})
+                             "features": "p4_features_dns + " + ("p5_tls (rareté sur bénin)" if with_p5
+                                                                 else "volumes P2")})
             params = IF_PARAMS if kind == "iforest" else HGB_PARAMS
             mlflow.log_params({k: v for k, v in params.items()} | {"target_fpr": TARGET_FPR,
                               "threshold_split": "val_benign"})
@@ -125,12 +130,15 @@ def run(df, kind, mlflow):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--p2", help="dossier output de P2 (sessions_pcap.parquet)")
+    ap.add_argument("--p5", help="dossier p5_output (features_tls.parquet) : features TLS pour le web")
     ap.add_argument("--supervised", action="store_true", help="ajoute le modèle supervisé de référence")
     ap.add_argument("--no-mlflow", action="store_true")
     args = ap.parse_args()
 
-    print("[1/4] chargement sessions P2 + features P4")
-    df = load_dataset(p2_dir(args.p2)).reset_index(drop=True)
+    print("[1/4] chargement sessions P2 + features P4" + (" + P5" if args.p5 else ""))
+    df = load_dataset(p2_dir(args.p2), p5=args.p5).reset_index(drop=True)
+    if args.p5:
+        print(f"       référence TLS -> {save_reference(df.attrs['tls_reference'], MODELS_DIR)}")
     mlflow = None if args.no_mlflow else setup_mlflow("c2-isolation-forest")
 
     all_rows = []
@@ -138,7 +146,7 @@ def main():
     kinds = ["iforest"] + (["supervised_hgb"] if args.supervised else [])
     for i, kind in enumerate(kinds):
         print(f"[2/4] entraînement {kind}")
-        scores, preds, rows = run(df, kind, mlflow)
+        scores, preds, rows = run(df, kind, mlflow, with_p5=bool(args.p5))
         all_rows += rows
         out[f"{kind}_score"], out[f"{kind}_alert"] = scores, preds.astype("int8")
         if kind == "iforest":

@@ -14,14 +14,17 @@ Les modèles sont chargés UNE SEULE FOIS dans __init__ (contrainte < 5 s par al
 Chaque étape est chronométrée (self.timings) pour suivre la latence dès maintenant.
 
 État actuel :
-  OK      score() : règles P6.1 + Isolation Forest P6.2 (si p6_models/models/*.joblib existe)
-  OK      run_from_p2_output() : rejoue le pipeline sur des sorties P2/P4 déjà calculées
+  OK      score() : règles P6.1 + Isolation Forest P6.2 + autoencodeur P5.6 (Oumaima)
+          (chaque détecteur est utilisé si son fichier existe dans p6_models/models/)
+  OK      features() : P4 (features_dns.parquet) + P5 (features_tls.parquet, groupe web) ; rareté JA3/JA4
+          et réputation recalculées avec la référence du bénin du train (models/tls_reference.joblib)
+  OK      run_from_p2_output() : rejoue le pipeline sur des sorties P2/P4/P5 déjà calculées
   À FAIRE extract / sessionize sur un PCAP live (réutiliser p2_01_extract / p2_02_sessions)
   À FAIRE features() en mémoire : Hajar/Imane exposent une fonction compute(sessions, events, pkts)
-  À FAIRE autoencodeur (Oumaima), LSTM (Wassima S3), fusion (Oumaima S3), SHAP (Farah), JSON (Salma)
+  À FAIRE LSTM (Wassima S3), fusion (Oumaima S3), SHAP (Farah), JSON + MITRE (Salma)
 
 Usage :
-  python -I p7_app_demo/pipeline.py --p2 DOSSIER_OUTPUT_P2 [--limit 5000]
+  python -I p7_app_demo/pipeline.py --p2 DOSSIER_OUTPUT_P2 [--p5 DOSSIER_P5_OUTPUT] [--limit 5000]
 """
 from __future__ import annotations
 
@@ -40,17 +43,24 @@ sys.path.insert(0, str(REPO / "p6_models" / "scripts"))
 from p6_common import GROUPS, MODELS_DIR, P4_FEATURES, p2_dir, to_matrix  # noqa: E402
 from p6_01_rule_baselines import predict as rules_predict  # noqa: E402
 from p6_01_rule_baselines import rule_scores, RULES  # noqa: E402
+from p6_tls import apply_tls_reference, load_reference, merge_p5  # noqa: E402
+
+P5_DIR = REPO / "p5_features_tls_seq" / "output"   # features_tls.parquet d'Imane (mode hors-ligne)
+AE_FILE = "autoencoder.pt"
 
 
 class C2Pipeline:
     """Chaîne de détection. Instancier une fois, appeler run_*() pour chaque capture."""
 
-    def __init__(self, models_dir: Path = MODELS_DIR, use_iforest: bool = True):
+    def __init__(self, models_dir: Path = MODELS_DIR, use_iforest: bool = True,
+                 use_autoencoder: bool = True, p5_dir: Path | None = P5_DIR):
         self.timings: dict[str, float] = {}
+        self.p5_dir = Path(p5_dir) if p5_dir else None
         with self._timer("load_models"):
             self.models = self._load_models(models_dir) if use_iforest else {}
             self.rule_thresholds = self._load_rule_thresholds(models_dir)
-            # TODO S3 : self.autoencoder = torch.load(...)  (Oumaima)
+            self.tls_reference = load_reference(models_dir)
+            self.autoencoder = self._load_autoencoder(models_dir) if use_autoencoder else None
             # TODO S3 : self.sequence_model = torch.load(...)  (LSTM, Wassima)
 
     # ------------------------------------------------------------------ utilitaires
@@ -81,6 +91,29 @@ class C2Pipeline:
                   "(seules les règles seront utilisées)")
         return models
 
+    @staticmethod
+    def _load_autoencoder(models_dir: Path):
+        """autoencoder.pt (Oumaima, P5.6b) : modèle + prétraitement + seuil de chaque groupe."""
+        path = Path(models_dir) / AE_FILE
+        if not path.exists():
+            print(f"[pipeline] {path.name} absent (à récupérer sur le Drive) : autoencodeur désactivé")
+            return None
+        try:
+            from p5_6b_autoencoder_train import load_autoencoder, score_autoencoder
+        except ImportError as e:   # torch non installé
+            print(f"[pipeline] autoencodeur désactivé ({e})")
+            return None
+        return {"groups": load_autoencoder(path), "score": score_autoencoder}
+
+    @staticmethod
+    def _usable(df: pd.DataFrame, cols: list[str], name: str, group: str) -> bool:
+        """Un détecteur n'est appliqué que si toutes ses colonnes sont présentes (sinon : NaN + message)."""
+        missing = [c for c in cols if c not in df.columns]
+        if missing:
+            print(f"[pipeline] {name}/{group} ignoré : colonnes absentes {missing[:3]}"
+                  f"{'...' if len(missing) > 3 else ''} (features P5 non chargées ?)")
+        return not missing
+
     # ------------------------------------------------------------------ étapes
     def extract(self, pcap: Path) -> Path:
         """PCAP -> journaux. TODO (S3/S4) : appeler l'extraction tshark de P2 sur un seul fichier."""
@@ -100,7 +133,14 @@ class C2Pipeline:
             {"session_id": pd.Series(dtype=str)})
         df = sessions.merge(feats, on="session_id", how="left")
         df["group"] = df["session_type"].map({t: g for g, ts in GROUPS.items() for t in ts})
-        # TODO : + features P5 (TLS / séquences, Imane) jointes sur session_id
+        # features P5 (TLS, Imane) : groupe web seulement, puis référence « bénin du train »
+        if self.p5_dir and (self.p5_dir / "features_tls.parquet").exists():
+            df = merge_p5(df, self.p5_dir)
+            if self.tls_reference is not None:
+                df = apply_tls_reference(df, self.tls_reference)
+            else:
+                print("[pipeline] tls_reference.joblib absent : rareté/réputation P5 d'origine "
+                      "(lancer p6_02_isolation_forest.py --p5 ...)")
         return df
 
     def score(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -112,11 +152,17 @@ class C2Pipeline:
         out["iforest_alert"] = False
         for group, b in self.models.items():
             m = (df["group"] == group).to_numpy()
-            if m.any():
+            if m.any() and self._usable(df, b["columns"], "iforest", group):
                 s = -b["model"].score_samples(to_matrix(df[m], b["columns"]))
                 out.loc[m, "iforest_score"] = s
                 out.loc[m, "iforest_alert"] = s > b["threshold"]
-        # TODO S3 : out["ae_score"], out["lstm_score"]
+        if self.autoencoder:
+            groups = {g: b for g, b in self.autoencoder["groups"].items()
+                      if self._usable(df, b["cols"], "autoencoder", g)}
+            ae = self.autoencoder["score"](groups, df)
+            out["ae_score"] = ae["ae_score"].to_numpy()
+            out["ae_alert"] = ae["ae_alert"].astype(bool).to_numpy()
+        # TODO S3 : out["lstm_score"], out["lstm_alert"]
         return out
 
     def verdict(self, scores: pd.DataFrame) -> pd.DataFrame:
@@ -141,7 +187,8 @@ class C2Pipeline:
             "src_ip_hash": r.src_ip_hash,
             "destination": r.parent_domain if r.session_type == "dns" else r.server_name,
             "session_type": r.session_type,
-            "score": None if pd.isna(r.iforest_score) else round(float(r.iforest_score), 4),
+            "scores": {k: round(float(getattr(r, k)), 4) for k in ("iforest_score", "ae_score")
+                       if hasattr(r, k) and not pd.isna(getattr(r, k))},
             "detectors": r.detectors,
             "top_features": [],          # TODO S3 : SHAP (Farah, P7.2)
             "mitre_technique": None,     # TODO S3 : Salma (P7.3) — ex. T1071.004 (DNS), T1071.001 (web)
@@ -183,10 +230,12 @@ class C2Pipeline:
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--p2", help="dossier output de P2")
+    ap.add_argument("--p5", help="dossier p5_output (features_tls.parquet) ; défaut : "
+                                 "p5_features_tls_seq/output")
     ap.add_argument("--limit", type=int, default=None, help="nb de sessions tirées au hasard (test rapide)")
     args = ap.parse_args()
 
-    pipe = C2Pipeline()
+    pipe = C2Pipeline(p5_dir=Path(args.p5) if args.p5 else P5_DIR)
     res = pipe.run_from_p2_output(p2_dir(args.p2), limit=args.limit)
     v, df = res["verdicts"], res["data"]
     n_alert = int(v["alert"].sum())
@@ -194,6 +243,8 @@ def main():
     if "label" in df:
         tp = int(((v["alert"] == 1) & (df["label"] == 1)).sum())
         print(f"           dont {tp:,} vrais C2 sur {int((df['label'] == 1).sum()):,} C2 présents")
+        for col in [c for c in v.columns if c.endswith("_alert")]:
+            print(f"           {col:<14} {int(v[col].sum()):>7,} alertes")
     print("[pipeline] chronométrage (s) :", {k: round(t, 3) for k, t in res["timings"].items()})
     if res["alerts"]:
         print("[pipeline] exemple d'alerte :", res["alerts"][0])
