@@ -62,6 +62,20 @@ python p3_data_understanding/scripts/p3_suite.py
 - **Alerte < 5 s**
 - **Explicabilité SHAP**
 
+## ⚠️ Limites connues : raccourcis de dataset
+
+Certaines colonnes permettent de reconnaître **la capture d'origine** plutôt que le **comportement C2**.
+Un modèle (surtout supervisé) peut les utiliser comme raccourci et afficher de bons scores trompeurs :
+
+| Feature | Constat | Risque |
+|---|---|---|
+| `session_type == http` | 2 565 C2 contre 262 bénins (91 % de C2) | le modèle apprend « HTTP = C2 » |
+| `tls_version == 0` | 66 % des C2 https (2 700 / 4 098) contre 7 % du bénin | reconnaît la capture, pas le comportement |
+| `has_ja3` | 0,93 chez le bénin contre 0,48 chez le C2 | idem |
+
+**Sprint 3** : entraîner et évaluer chaque modèle **avec et sans** ces colonnes, puis comparer.
+Détails : `docs/note_P5_corrections_imane.md` (section 3) et `p6_models/README.md`.
+
 ## ⚠️ Sécurité & conformité
 
 - Les PCAP de malware sont analysés **au niveau réseau uniquement** — **jamais exécutés**.

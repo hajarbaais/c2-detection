@@ -20,6 +20,8 @@ scikit-learn>=1.3
 torch>=2.1          # Autoencoder / LSTM / Transformer
 shap>=0.44          # explainability
 optuna>=3.4         # hyper-parameter tuning (optional)
+mlflow>=2.10        # experiment tracking (P6) -> docs/mlflow.md
+joblib>=1.3         # model save/load
 
 # --- P7 app / demo ---
 streamlit>=1.30

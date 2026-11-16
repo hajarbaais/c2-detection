@@ -1,0 +1,15 @@
+family,n_c2,n_benign,recall,fpr,fp,fn
+benign_dns,0,30045,,0.000999,30,0
+benign_doh,0,999,,0.003003,3,0
+benign_https,0,75735,,0.001439,109,0
+benign_normal_user,0,1124,,0.008897,10,0
+cobaltstrike,5,0,0.000000,,0,5
+dns2tcp,19,0,0.000000,,0,19
+dns_exfil_heavy_exe,6,0,1.000000,,0,0
+dns_exfil_light_video,1,0,0.000000,,0,1
+dridex,600,0,0.000000,,0,600
+iodine,20,0,0.000000,,0,20
+neris,1435,0,0.000697,,0,1434
+rbot,24,0,0.000000,,0,24
+trickbot,1469,0,0.000681,,0,1468
+virut,578,0,0.013841,,0,570
