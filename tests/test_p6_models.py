@@ -160,7 +160,7 @@ def test_pipeline_end_to_end_on_toy(tmp_path):
     assert v.loc[df.label == 1, "alert"].mean() == 1.0
     alerts = pipe.alerts(feats, v)
     assert len(alerts) == int(v["alert"].sum())
-    assert {"session_id", "scores", "detectors", "mitre_technique"} <= set(alerts[0])
+    assert {"session_id", "scores", "detectors", "mitre"} <= set(alerts[0])   # format P7.3 (alert_schema.json)
     assert "load_models" in pipe.timings
 
 

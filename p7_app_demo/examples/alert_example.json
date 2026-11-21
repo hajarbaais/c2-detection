@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "alert_id": "C2-3f9a1c0b7d24",
+  "session_id": "dns_0a1b2c3d_w12",
+  "timestamp": 1600000000.0,
+  "time_utc": "2020-09-13T12:26:40Z",
+  "src_ip_hash": "9f2c1a7e5b3d8c40",
+  "destination": "x7k2p9q.evil-domain.com",
+  "session_type": "dns",
+  "severity": "high",
+  "detectors": ["rules", "iforest", "ae"],
+  "scores": {
+    "iforest_score": 0.7123,
+    "ae_score": 3.4187
+  },
+  "top_features": [
+    { "name": "entropy_mean", "value": 4.21, "impact": 0.38 },
+    { "name": "iat_cv", "value": 0.05, "impact": 0.22 },
+    { "name": "qlen_mean", "value": 52.0, "impact": 0.17 }
+  ],
+  "mitre": [
+    {
+      "technique_id": "T1071.004",
+      "name": "Application Layer Protocol: DNS",
+      "tactic": "Command and Control"
+    }
+  ]
+}

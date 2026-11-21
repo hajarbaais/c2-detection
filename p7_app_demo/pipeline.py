@@ -38,6 +38,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))   # dossier p7_app_demo
+from alerts import build_alert  # noqa: E402
+
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "p6_models" / "scripts"))
 from p6_common import GROUPS, MODELS_DIR, P4_FEATURES, p2_dir, to_matrix  # noqa: E402
@@ -181,18 +184,7 @@ class C2Pipeline:
         """Verdicts -> alertes JSON. Format PROVISOIRE ; schéma final + MITRE : Salma (P7.3)."""
         alerted = verdicts[verdicts["alert"] == 1].join(
             df[["session_type", "src_ip_hash", "parent_domain", "server_name", "ts_start"]])
-        return [{
-            "session_id": r.session_id,
-            "timestamp": float(r.ts_start),
-            "src_ip_hash": r.src_ip_hash,
-            "destination": r.parent_domain if r.session_type == "dns" else r.server_name,
-            "session_type": r.session_type,
-            "scores": {k: round(float(getattr(r, k)), 4) for k in ("iforest_score", "ae_score")
-                       if hasattr(r, k) and not pd.isna(getattr(r, k))},
-            "detectors": r.detectors,
-            "top_features": [],          # TODO S3 : SHAP (Farah, P7.2)
-            "mitre_technique": None,     # TODO S3 : Salma (P7.3) — ex. T1071.004 (DNS), T1071.001 (web)
-        } for r in alerted.itertuples()]
+        return [build_alert(r) for r in alerted.itertuples()]
 
     # ------------------------------------------------------------------ points d'entrée
     def run_from_p2_output(self, p2: Path, limit: int | None = None) -> dict:
