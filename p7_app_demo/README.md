@@ -1,7 +1,8 @@
 # P7 — Démo live & explicabilité
 
 ## Contenu
-- `app/` — application **Streamlit** : ingestion live → session → score → alerte (< 5 s)
+- `app/` — tableau de bord **Streamlit** : dépôt PCAP, sessions (alertes en rouge), détail + SHAP, chronomètre → voir [`app/README.md`](app/README.md)
+  Lancement : `streamlit run p7_app_demo/app/app.py`
 - `shap/` — explications SHAP par prédiction
 - `docker/` — Dockerfile + docker-compose pour déployer la démo
 
