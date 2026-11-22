@@ -7,7 +7,9 @@ Features de P4 + P5 (jointes sur `session_id`, **jointure gauche** depuis `sessi
 - **Baselines à règles** (P6.1) — `scripts/p6_01_rule_baselines.py` ✅ sprint 2
 - **Isolation Forest** (P6.2) — `scripts/p6_02_isolation_forest.py` ✅ sprint 2 (+ `--supervised` : HistGradientBoosting de référence ; `--p5` : features TLS pour le web)
 - **Autoencoder** (P5.6, Oumaima) — `scripts/p5_6b_autoencoder_train.py`, anomalie, entraîné sur le bénin uniquement ; branché dans le pipeline P7
-- **LSTM / Transformer** — séquentiel (séquences de P5) — sprint 3
+- **LSTM** (P6.3, Wassima) — `scripts/p6_03_lstm.py` — sprint 3, + **robustesse au jitter** (P6.4) `scripts/p6_04_jitter.py` → `README_lstm.md`
+- **Transformer** (P6.5, Imane) — `scripts/p6_05_transformer.py` — sprint 3 → `README_transformer.md`
+- **Comparaison LSTM / Transformer** — `scripts/p6_compare_seq.py` → `comparison_lstm_transformer.md`
 
 ## Lancer (sprint 2)
 
