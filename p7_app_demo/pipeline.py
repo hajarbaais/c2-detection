@@ -21,7 +21,8 @@ Chaque étape est chronométrée (self.timings) pour suivre la latence dès main
   OK      run_from_p2_output() : rejoue le pipeline sur des sorties P2/P4/P5 déjà calculées
   À FAIRE extract / sessionize sur un PCAP live (réutiliser p2_01_extract / p2_02_sessions)
   À FAIRE features() en mémoire : Hajar/Imane exposent une fonction compute(sessions, events, pkts)
-  À FAIRE LSTM (Wassima S3), fusion (Oumaima S3), SHAP (Farah), JSON + MITRE (Salma)
+  OK      explications SHAP P7.2 sur les sessions alertées
+  À FAIRE LSTM (Wassima S3), fusion (Oumaima S3), JSON + MITRE (Salma)
 
 Usage :
   python -I p7_app_demo/pipeline.py --p2 DOSSIER_OUTPUT_P2 [--p5 DOSSIER_P5_OUTPUT] [--limit 5000]
@@ -39,11 +40,15 @@ import numpy as np
 import pandas as pd
 
 REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "p6_models" / "scripts"))
 from p6_common import GROUPS, MODELS_DIR, P4_FEATURES, p2_dir, to_matrix  # noqa: E402
 from p6_01_rule_baselines import predict as rules_predict  # noqa: E402
 from p6_01_rule_baselines import rule_scores, RULES  # noqa: E402
 from p6_tls import apply_tls_reference, load_reference, merge_p5  # noqa: E402
+from p7_app_demo.shap_explanations import (  # noqa: E402
+    BACKGROUND_SIZE, benign_training_rows, explain_alerts,
+)
 
 P5_DIR = REPO / "p5_features_tls_seq" / "output"   # features_tls.parquet d'Imane (mode hors-ligne)
 AE_FILE = "autoencoder.pt"
@@ -53,9 +58,12 @@ class C2Pipeline:
     """Chaîne de détection. Instancier une fois, appeler run_*() pour chaque capture."""
 
     def __init__(self, models_dir: Path = MODELS_DIR, use_iforest: bool = True,
-                 use_autoencoder: bool = True, p5_dir: Path | None = P5_DIR):
+                 use_autoencoder: bool = True, p5_dir: Path | None = P5_DIR,
+                 shap_reference: pd.DataFrame | None = None):
         self.timings: dict[str, float] = {}
         self.p5_dir = Path(p5_dir) if p5_dir else None
+        self.shap_reference = (benign_training_rows(shap_reference)
+                               if shap_reference is not None else None)
         with self._timer("load_models"):
             self.models = self._load_models(models_dir) if use_iforest else {}
             self.rule_thresholds = self._load_rule_thresholds(models_dir)
@@ -153,7 +161,7 @@ class C2Pipeline:
         for group, b in self.models.items():
             m = (df["group"] == group).to_numpy()
             if m.any() and self._usable(df, b["columns"], "iforest", group):
-                s = -b["model"].score_samples(to_matrix(df[m], b["columns"]))
+                s = self._iforest_score(b, df[m])
                 out.loc[m, "iforest_score"] = s
                 out.loc[m, "iforest_alert"] = s > b["threshold"]
         if self.autoencoder:
@@ -165,6 +173,10 @@ class C2Pipeline:
         # TODO S3 : out["lstm_score"], out["lstm_alert"]
         return out
 
+    @staticmethod
+    def _iforest_score(bundle: dict, rows: pd.DataFrame) -> np.ndarray:
+        return -bundle["model"].score_samples(to_matrix(rows, bundle["columns"]))
+
     def verdict(self, scores: pd.DataFrame) -> pd.DataFrame:
         """Scores -> verdict final. Provisoire : alerte si AU MOINS un détecteur alerte.
 
@@ -175,6 +187,23 @@ class C2Pipeline:
         v["alert"] = v[alert_cols].any(axis=1).astype("int8")
         v["detectors"] = v[alert_cols].apply(lambda r: ",".join(c[:-6] for c in alert_cols if r[c]), axis=1)
         return v
+
+    def _shap_scorers(self, group: str):
+        """Yield triggering scores in order of priority for the three JSON slots."""
+        if self.autoencoder and group in self.autoencoder["groups"]:
+            bundle = self.autoencoder["groups"][group]
+
+            def ae_score(rows):
+                return self.autoencoder["score"]({group: bundle}, rows.assign(group=group))["ae_score"].to_numpy()
+
+            yield "ae_alert", bundle["cols"], ae_score
+        if group in self.models:
+            forest = self.models[group]
+
+            def iforest_score(rows):
+                return self._iforest_score(forest, rows)
+
+            yield "iforest_alert", forest["columns"], iforest_score
 
     @staticmethod
     def alerts(df: pd.DataFrame, verdicts: pd.DataFrame) -> list[dict]:
@@ -195,15 +224,24 @@ class C2Pipeline:
         } for r in alerted.itertuples()]
 
     # ------------------------------------------------------------------ points d'entrée
-    def run_from_p2_output(self, p2: Path, limit: int | None = None) -> dict:
+    def run_from_p2_output(self, p2: Path, limit: int | None = None,
+                           session_ids: list[str] | None = None) -> dict:
         """Rejoue le pipeline à partir des sorties P2 + P4 déjà calculées (mode hors-ligne)."""
         t0 = time.perf_counter()
         with self._timer("load_sessions"):
             sessions = pd.read_parquet(Path(p2) / "sessions_pcap.parquet")
-            if limit:
+            reference_sessions = benign_training_rows(sessions) if limit or session_ids else None
+            if session_ids:
+                if limit:
+                    raise ValueError("limit and session_ids are mutually exclusive")
+                sessions = sessions.loc[sessions["session_id"].isin(session_ids)]
+                missing = set(session_ids) - set(sessions["session_id"])
+                if missing:
+                    raise ValueError(f"Unknown session IDs: {', '.join(sorted(missing))}")
+            elif limit:
                 sessions = sessions.sample(min(limit, len(sessions)), random_state=0)
             sessions = sessions.reset_index(drop=True)
-        return self._run(sessions, t0)
+        return self._run(sessions, t0, reference_sessions)
 
     def run_pcap(self, pcap: Path) -> dict:
         """Mode live (démo Streamlit). Fonctionnera quand extract/sessionize/features seront branchés."""
@@ -214,7 +252,8 @@ class C2Pipeline:
             sessions, _events, _pkts = self.sessionize(logs)
         return self._run(sessions, t0)
 
-    def _run(self, sessions: pd.DataFrame, t0: float) -> dict:
+    def _run(self, sessions: pd.DataFrame, t0: float,
+             reference_sessions: pd.DataFrame | None = None) -> dict:
         with self._timer("features"):
             df = self.features(sessions)
         with self._timer("score"):
@@ -223,6 +262,23 @@ class C2Pipeline:
             verdicts = self.verdict(scores)
         with self._timer("alerts"):
             alerts = self.alerts(df, verdicts)
+        with self._timer("shap"):
+            model_flags = verdicts.columns.intersection(["ae_alert", "iforest_alert"])
+            explainable = verdicts["alert"].eq(1) & verdicts[model_flags].any(axis=1)
+            if explainable.any():
+                model_verdicts = verdicts.assign(alert=explainable)
+                reference = self.shap_reference
+                if reference is None and reference_sessions is not None:
+                    groups = {t: g for g, types in GROUPS.items() for t in types}
+                    samples = [rows.sample(min(len(rows), BACKGROUND_SIZE), random_state=0)
+                               for _, rows in reference_sessions.groupby(reference_sessions["session_type"].map(groups))]
+                    if samples:
+                        reference = self.features(pd.concat(samples))
+                if reference is None:
+                    reference = benign_training_rows(df)
+                explanations = explain_alerts(df, model_verdicts, reference, self._shap_scorers)
+                for alert in alerts:
+                    alert["top_features"] = explanations.get(str(alert["session_id"]), [])
         self.timings["total"] = time.perf_counter() - t0
         return {"verdicts": verdicts, "alerts": alerts, "timings": dict(self.timings), "data": df}
 
@@ -232,11 +288,13 @@ def main():
     ap.add_argument("--p2", help="dossier output de P2")
     ap.add_argument("--p5", help="dossier p5_output (features_tls.parquet) ; défaut : "
                                  "p5_features_tls_seq/output")
-    ap.add_argument("--limit", type=int, default=None, help="nb de sessions tirées au hasard (test rapide)")
+    selection = ap.add_mutually_exclusive_group()
+    selection.add_argument("--limit", type=int, help="nb de sessions tirées au hasard (test rapide)")
+    selection.add_argument("--session-id", action="append", help="session précise, option répétable")
     args = ap.parse_args()
 
     pipe = C2Pipeline(p5_dir=Path(args.p5) if args.p5 else P5_DIR)
-    res = pipe.run_from_p2_output(p2_dir(args.p2), limit=args.limit)
+    res = pipe.run_from_p2_output(p2_dir(args.p2), limit=args.limit, session_ids=args.session_id)
     v, df = res["verdicts"], res["data"]
     n_alert = int(v["alert"].sum())
     print(f"[pipeline] {len(v):,} sessions -> {n_alert:,} alertes")

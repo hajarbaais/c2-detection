@@ -2,7 +2,7 @@
 
 ## Contenu
 - `app/` — application **Streamlit** : ingestion live → session → score → alerte (< 5 s)
-- `shap/` — explications SHAP par prédiction
+- `shap_explanations.py` — explications SHAP pour les sessions alertées (P7.2)
 - `docker/` — Dockerfile + docker-compose pour déployer la démo
 
 ## Pipeline bout-en-bout (P7.1) — `pipeline.py`
@@ -23,7 +23,8 @@ python -I p7_app_demo/pipeline.py --p2 <dossier output P2> --p5 <dossier p5_outp
 | chargement des modèles une seule fois | ✅ règles calibrées + Isolation Forest + autoencodeur (`autoencoder.pt`) + référence TLS |
 | `features` | ✅ P4 (`features_dns.parquet`) + P5 (`features_tls.parquet`, rareté/réputation recalculées avec `tls_reference.joblib`) — TODO : calcul en mémoire |
 | `score` / `verdict` | ✅ règles + IF + AE (`ae_score`, `ae_alert`), verdict = au moins un détecteur — TODO S3 : LSTM, fusion |
-| `alerts` | ✅ format provisoire — TODO S3 : schéma JSON + MITRE (Salma), SHAP (Farah) |
+| `alerts` | ✅ format provisoire — schéma JSON + MITRE sur la branche P7.3 de Salma |
+| `shap` | ✅ jusqu'à trois contributions SHAP par session alertée par l'autoencodeur ou l'Isolation Forest |
 | `extract` / `sessionize` sur un PCAP | ⏳ `NotImplementedError` — brancher les scripts P2 |
 
 Un détecteur dont le fichier manque (ou dont les colonnes P5 manquent) est ignoré avec un message, sans erreur.
@@ -33,3 +34,40 @@ Mesure actuelle (184 979 sessions, hors extraction, CPU) : ~3,9 s au total dont 
 
 ## Démo
 Montrer un cas **normal** et un cas **suspect**, avec l'explication SHAP de la décision.
+
+## Explications SHAP (P7.2)
+
+Le pipeline remplit `top_features` après la construction des alertes. Chaque entrée
+contient `name` (colonne P4/P5 ou P2), `value` (valeur d'origine, `null` si manquante)
+et `impact` (contribution SHAP signée). Jusqu'à trois contributions non nulles sont
+affichées, par valeur absolue décroissante. Un impact positif augmente le score expliqué
+par rapport à la référence bénigne. La somme des trois impacts affichés peut différer
+de l'écart total au score de référence.
+
+Quand l'autoencodeur et l'Isolation Forest déclenchent la même alerte, la liste
+explique l'autoencodeur. L'impact est exprimé en unités d'erreur de reconstruction
+pour l'autoencodeur et de score d'anomalie pour l'Isolation Forest. Une alerte
+déclenchée uniquement par les règles garde `top_features: []`.
+Les contributions sont estimées avec SHAP par permutation, avec trois allers-retours complets
+et jusqu'à 16 sessions bénignes d'entraînement du même groupe (DNS ou web). Le score
+est recalculé avec le prétraitement habituel du détecteur. Les valeurs sont locales à
+la session et au score choisi.
+
+En mode hors ligne, la référence vient des sorties P2/P4/P5, y compris en présence de
+`--limit` ou de `--session-id` (option répétable). Exemple pour rejouer une session, avec
+les fichiers fournis par l'équipe placés dans les dossiers du dépôt :
+
+```powershell
+python -I p7_app_demo/pipeline.py --p2 data/P2_livrables_v3/output --session-id <identifiant>
+```
+
+Pour un appel avec des sessions sans labels, fournir à `C2Pipeline`
+un `shap_reference` déjà construit par `features()` à partir d'un jeu de référence
+contenant `group`, `split` et `label`. Sans référence bénigne pour le groupe, l'alerte
+reste disponible avec `top_features: []` et le pipeline émet un avertissement.
+Le chronométrage `shap` inclut la préparation de la référence et le calcul des contributions.
+
+Pour rejouer le lot d'équipe, utiliser le `autoencoder.pt` standard d'Oumaima et
+les deux `iforest_*.joblib` de Wassima avec leur `tls_reference.joblib`, dans
+`p6_models/models/`. Les fichiers Isolation Forest transmis ont été entraînés
+avec `scikit-learn==1.9.1`. Les poids et les fichiers Parquet restent hors Git.
