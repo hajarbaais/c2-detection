@@ -256,7 +256,8 @@ def load_lstm(path, device="cpu") -> dict:
         model = SeqLSTM(**b["dims"])
         model.load_state_dict(b["state_dict"])
         model.eval()
-        out[group] = {"model": model.to(device), "threshold": b["threshold"], "mode": ckpt["mode"]}
+        out[group] = {"model": model.to(device), "threshold": b["threshold"], "mode": ckpt["mode"],
+                      "subset": ckpt.get("subset", "all"), "features": ckpt.get("features")}
     return out
 
 

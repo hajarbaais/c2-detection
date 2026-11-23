@@ -22,7 +22,8 @@ Chaque étape est chronométrée (self.timings) pour suivre la latence dès main
   À FAIRE extract / sessionize sur un PCAP live (réutiliser p2_01_extract / p2_02_sessions)
   À FAIRE features() en mémoire : Hajar/Imane exposent une fonction compute(sessions, events, pkts)
   OK      explications SHAP P7.2 sur les sessions alertées
-  À FAIRE LSTM (Wassima S3), fusion (Oumaima S3), JSON + MITRE (Salma)
+  OK      LSTM et Transformer optionnels à partir des séquences P5
+  À FAIRE fusion (Oumaima S3), JSON + MITRE (Salma)
 
 Usage :
   python -I p7_app_demo/pipeline.py --p2 DOSSIER_OUTPUT_P2 [--p5 DOSSIER_P5_OUTPUT] [--limit 5000]
@@ -49,6 +50,7 @@ from p6_tls import apply_tls_reference, load_reference, merge_p5  # noqa: E402
 from p7_app_demo.shap_explanations import (  # noqa: E402
     BACKGROUND_SIZE, benign_training_rows, explain_alerts,
 )
+from p7_app_demo.sequence_explanations import SequenceExplanations  # noqa: E402
 
 P5_DIR = REPO / "p5_features_tls_seq" / "output"   # features_tls.parquet d'Imane (mode hors-ligne)
 AE_FILE = "autoencoder.pt"
@@ -59,7 +61,8 @@ class C2Pipeline:
 
     def __init__(self, models_dir: Path = MODELS_DIR, use_iforest: bool = True,
                  use_autoencoder: bool = True, p5_dir: Path | None = P5_DIR,
-                 shap_reference: pd.DataFrame | None = None):
+                 shap_reference: pd.DataFrame | None = None, lstm_path: Path | None = None,
+                 transformer_path: Path | None = None):
         self.timings: dict[str, float] = {}
         self.p5_dir = Path(p5_dir) if p5_dir else None
         self.shap_reference = (benign_training_rows(shap_reference)
@@ -69,7 +72,11 @@ class C2Pipeline:
             self.rule_thresholds = self._load_rule_thresholds(models_dir)
             self.tls_reference = load_reference(models_dir)
             self.autoencoder = self._load_autoencoder(models_dir) if use_autoencoder else None
-            # TODO S3 : self.sequence_model = torch.load(...)  (LSTM, Wassima)
+            self.sequence_models = None
+            if lstm_path or transformer_path:
+                if self.p5_dir is None:
+                    raise ValueError("The sequence models require a P5 output directory")
+                self.sequence_models = SequenceExplanations(self.p5_dir, lstm_path, transformer_path)
 
     # ------------------------------------------------------------------ utilitaires
     @contextmanager
@@ -170,7 +177,8 @@ class C2Pipeline:
             ae = self.autoencoder["score"](groups, df)
             out["ae_score"] = ae["ae_score"].to_numpy()
             out["ae_alert"] = ae["ae_alert"].astype(bool).to_numpy()
-        # TODO S3 : out["lstm_score"], out["lstm_alert"]
+        if self.sequence_models:
+            self.sequence_models.add_scores(out, df)
         return out
 
     @staticmethod
@@ -263,8 +271,11 @@ class C2Pipeline:
         with self._timer("alerts"):
             alerts = self.alerts(df, verdicts)
         with self._timer("shap"):
+            sequence_explanations = self.sequence_models.explain(verdicts) if self.sequence_models else {}
             model_flags = verdicts.columns.intersection(["ae_alert", "iforest_alert"])
             explainable = verdicts["alert"].eq(1) & verdicts[model_flags].any(axis=1)
+            explainable &= ~verdicts["session_id"].astype(str).isin(sequence_explanations)
+            explanations = {}
             if explainable.any():
                 model_verdicts = verdicts.assign(alert=explainable)
                 reference = self.shap_reference
@@ -277,8 +288,16 @@ class C2Pipeline:
                 if reference is None:
                     reference = benign_training_rows(df)
                 explanations = explain_alerts(df, model_verdicts, reference, self._shap_scorers)
+            explanations.update(sequence_explanations)
+            for alert in alerts:
+                alert["top_features"] = explanations.get(str(alert["session_id"]), [])
+            sequence_scores = verdicts.columns.intersection(["lstm_score", "transformer_score"])
+            if sequence_scores.size:
+                scores_by_id = verdicts.set_index("session_id")[sequence_scores]
                 for alert in alerts:
-                    alert["top_features"] = explanations.get(str(alert["session_id"]), [])
+                    row = scores_by_id.loc[alert["session_id"]]
+                    alert["scores"].update({name: round(float(value), 4) for name, value in row.items()
+                                            if pd.notna(value)})
         self.timings["total"] = time.perf_counter() - t0
         return {"verdicts": verdicts, "alerts": alerts, "timings": dict(self.timings), "data": df}
 
@@ -288,12 +307,15 @@ def main():
     ap.add_argument("--p2", help="dossier output de P2")
     ap.add_argument("--p5", help="dossier p5_output (features_tls.parquet) ; défaut : "
                                  "p5_features_tls_seq/output")
+    ap.add_argument("--lstm", type=Path, help="checkpoint P6.3 du LSTM")
+    ap.add_argument("--transformer", type=Path, help="checkpoint P6.5 du Transformer")
     selection = ap.add_mutually_exclusive_group()
     selection.add_argument("--limit", type=int, help="nb de sessions tirées au hasard (test rapide)")
     selection.add_argument("--session-id", action="append", help="session précise, option répétable")
     args = ap.parse_args()
 
-    pipe = C2Pipeline(p5_dir=Path(args.p5) if args.p5 else P5_DIR)
+    pipe = C2Pipeline(p5_dir=Path(args.p5) if args.p5 else P5_DIR,
+                      lstm_path=args.lstm, transformer_path=args.transformer)
     res = pipe.run_from_p2_output(p2_dir(args.p2), limit=args.limit, session_ids=args.session_id)
     v, df = res["verdicts"], res["data"]
     n_alert = int(v["alert"].sum())

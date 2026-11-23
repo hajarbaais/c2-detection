@@ -135,3 +135,40 @@ def test_shap_explains_saved_torch_autoencoder(tmp_path, monkeypatch):
     for alert in result["alerts"]:
         assert alert["scores"]["ae_score"] == pytest.approx(9)
         assert alert["top_features"] == [{"name": "dns_entropy_max", "value": 4, "impact": 9}]
+
+
+@pytest.mark.parametrize("name", ["lstm", "transformer"])
+def test_shap_explains_saved_sequence_model(tmp_path, monkeypatch, name):
+    torch = pytest.importorskip("torch")
+    from p6_03_lstm import SeqLSTM
+    from p6_05_transformer import SeqTransformer
+
+    sessions = _sessions().assign(group="web", session_type="https")
+    names = ["log_dt", "log_size", "log_resp_size", "direction", "is_dns", "is_nxdomain"]
+    values = np.zeros((3, 3, 6), dtype=np.float32)
+    values[:, :2, 3] = 1                     # packet, not fallback
+    values[0, :2, 1] = 6                      # anomaly (id=both)
+    values[:, 2] = 100                        # padding must not affect score or displayed value
+    np.savez(tmp_path / "features_seq.npz", X=values, mask=np.tile([True, True, False], (3, 1)),
+             session_id=["both", "background", "normal"], label=[1, 0, 0], split=["test", "train", "test"],
+             session_type=["https"] * 3, feature_names=names)
+    cls = SeqLSTM if name == "lstm" else SeqTransformer
+    model = cls(n_feat=6, seq_len=3, mode="anomaly")
+    with torch.no_grad():
+        for parameter in model.parameters():
+            parameter.zero_()
+    path = tmp_path / f"{name}.pt"
+    torch.save({"groups": {"web": {"state_dict": model.state_dict(), "dims": model.dims, "threshold": 1.0}},
+                "mode": "anomaly", "subset": "packets", "features": names}, path)
+    pipe = C2Pipeline(models_dir=tmp_path, p5_dir=tmp_path, **{f"{name}_path": path})
+    monkeypatch.setattr(pipe, "features", lambda frame: frame)
+
+    result = pipe._run(sessions, time.perf_counter())
+
+    verdicts = result["verdicts"].set_index("session_id")
+    assert pd.isna(verdicts.at["rules", f"{name}_score"])
+    assert not verdicts.at["normal", "alert"]
+    alert = next(alert for alert in result["alerts"] if alert["session_id"] == "both")
+    assert alert["scores"][f"{name}_score"] == pytest.approx(37 / 6, abs=0.0001)
+    [feature] = alert["top_features"]
+    assert feature == {"name": "seq_log_size", "value": 6, "impact": pytest.approx(6)}

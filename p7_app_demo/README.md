@@ -22,9 +22,9 @@ python -I p7_app_demo/pipeline.py --p2 <dossier output P2> --p5 <dossier p5_outp
 |---|---|
 | chargement des modèles une seule fois | ✅ règles calibrées + Isolation Forest + autoencodeur (`autoencoder.pt`) + référence TLS |
 | `features` | ✅ P4 (`features_dns.parquet`) + P5 (`features_tls.parquet`, rareté/réputation recalculées avec `tls_reference.joblib`) — TODO : calcul en mémoire |
-| `score` / `verdict` | ✅ règles + IF + AE (`ae_score`, `ae_alert`), verdict = au moins un détecteur — TODO S3 : LSTM, fusion |
+| `score` / `verdict` | ✅ règles, IF, AE et modèles séquentiels optionnels. Verdict actuel dès qu'un détecteur alerte |
 | `alerts` | ✅ format provisoire — schéma JSON + MITRE sur la branche P7.3 de Salma |
-| `shap` | ✅ jusqu'à trois contributions SHAP par session alertée par l'autoencodeur ou l'Isolation Forest |
+| `shap` | ✅ jusqu'à trois contributions SHAP par session alertée par le LSTM, le Transformer, l'autoencodeur ou l'Isolation Forest |
 | `extract` / `sessionize` sur un PCAP | ⏳ `NotImplementedError` — brancher les scripts P2 |
 
 Un détecteur dont le fichier manque (ou dont les colonnes P5 manquent) est ignoré avec un message, sans erreur.
@@ -44,11 +44,12 @@ affichées, par valeur absolue décroissante. Un impact positif augmente le scor
 par rapport à la référence bénigne. La somme des trois impacts affichés peut différer
 de l'écart total au score de référence.
 
-Quand l'autoencodeur et l'Isolation Forest déclenchent la même alerte, la liste
-explique l'autoencodeur. L'impact est exprimé en unités d'erreur de reconstruction
-pour l'autoencodeur et de score d'anomalie pour l'Isolation Forest. Une alerte
-déclenchée uniquement par les règles garde `top_features: []`.
-Les contributions sont estimées avec SHAP par permutation, avec trois allers-retours complets
+Pour une alerte déclenchée par plusieurs modèles, la liste explique le premier modèle
+explicable dans l'ordre LSTM, Transformer, autoencodeur, Isolation Forest. Les impacts
+sont exprimés dans l'unité du score du modèle choisi. Une alerte déclenchée uniquement
+par les règles garde `top_features: []`.
+Pour l'autoencodeur et l'Isolation Forest, les contributions sont estimées avec SHAP par
+permutation, avec trois allers-retours complets
 et jusqu'à 16 sessions bénignes d'entraînement du même groupe (DNS ou web). Le score
 est recalculé avec le prétraitement habituel du détecteur. Les valeurs sont locales à
 la session et au score choisi.
@@ -71,3 +72,21 @@ Pour rejouer le lot d'équipe, utiliser le `autoencoder.pt` standard d'Oumaima e
 les deux `iforest_*.joblib` de Wassima avec leur `tls_reference.joblib`, dans
 `p6_models/models/`. Les fichiers Isolation Forest transmis ont été entraînés
 avec `scikit-learn==1.9.1`. Les poids et les fichiers Parquet restent hors Git.
+
+### LSTM et Transformer
+
+Activer un modèle séquentiel avec `--lstm` ou `--transformer` et le chemin de son
+checkpoint. Le dossier `--p5` doit contenir le `features_seq.npz` P5 correspondant.
+Le pipeline joint les séquences par `session_id`, reprend le score et le seuil P6,
+et respecte le sous-ensemble `packets` du checkpoint web et sa longueur d'entrée.
+
+```powershell
+python -I p7_app_demo/pipeline.py --p2 data/P2_livrables_v3/output --p5 p5_features_tls_seq/output --lstm p6_models/models/lstm_web_anomaly_packets.pt --transformer p6_models/models/tf_web_anomaly_packets.pt --limit 100
+```
+
+SHAP exact traite chaque canal P5 comme une contribution sur l'ensemble des pas
+valides. La référence remplace un canal par la médiane des pas bénins d'entraînement
+du même groupe, avec le masque et le padding de la session conservés. Pour une
+entrée `seq_*`, `value` est la moyenne du canal sur les pas valides dans l'échelle
+P5. Une séquence vide ou sans référence bénigne peut utiliser l'explication d'un
+autre détecteur qui a déclenché l'alerte.
