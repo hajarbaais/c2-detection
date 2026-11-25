@@ -1,0 +1,2 @@
+n_params,cpu_threads,size_mb,ms_per_session_batch1,ms_per_session_batch256,group,fit_seconds,epochs_run
+104464,1,0.422000,1.247200,0.139000,web,173.600000,30
