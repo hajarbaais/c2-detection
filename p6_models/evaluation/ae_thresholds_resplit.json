@@ -1,0 +1,40 @@
+{
+  "model": "autoencoder_resplit.pt",
+  "split_mode": "resplit_benign_web (expérience)",
+  "date": "2026-11-25",
+  "git_commit": "06eab3e",
+  "target_fpr": 0.001,
+  "seuil_regle": "bénin de validation, plus petit seuil laissant <= floor(0,1 % x n) faux positifs",
+  "groups": {
+    "dns": {
+      "threshold": 0.49932461977005005,
+      "n_val_benign": 9689,
+      "fp_allowed_val": 9,
+      "threshold_reliable": false,
+      "val_fpr": 0.000928888430178553,
+      "test_fpr": 0.0014515703351807865,
+      "test_fpr_low": 0.001081541630960488,
+      "test_fpr_high": 0.0019479503822185228,
+      "test_recall": 0.03699613473219216,
+      "test_recall_low": 0.029236896090961136,
+      "test_recall_high": 0.0467155176072922,
+      "meets_fpr_target": false,
+      "meets_recall_target": false
+    },
+    "web": {
+      "threshold": 0.3638342618942261,
+      "n_val_benign": 13906,
+      "fp_allowed_val": 13,
+      "threshold_reliable": true,
+      "val_fpr": 0.000934848266935136,
+      "test_fpr": 0.005643133165675029,
+      "test_fpr_low": 0.004603964068318289,
+      "test_fpr_high": 0.006915225521405818,
+      "test_recall": 0.5954816709292413,
+      "test_recall_low": 0.5754804641184722,
+      "test_recall_high": 0.6151706844525634,
+      "meets_fpr_target": false,
+      "meets_recall_target": false
+    }
+  }
+}

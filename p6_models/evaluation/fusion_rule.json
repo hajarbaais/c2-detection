@@ -1,0 +1,58 @@
+{
+  "date": "2026-11-25",
+  "target_fpr": 0.001,
+  "choix": "forcé par --select : ae+transformer|and",
+  "configuration": "ae+transformer",
+  "politique_web_sans_sequence": "abstain",
+  "regle_web_seq": "and",
+  "strates": {
+    "dns": {
+      "detectors": [
+        "ae"
+      ],
+      "rule": null,
+      "threshold": 0.49932461977005005,
+      "abstain": false,
+      "n_val_benign": 9689
+    },
+    "web_seq": {
+      "detectors": [
+        "ae",
+        "transformer"
+      ],
+      "rule": "and",
+      "threshold": 0.9944725932749885,
+      "abstain": false,
+      "n_val_benign": 2170,
+      "mask_names": [
+        "transformer"
+      ]
+    },
+    "web_noseq": {
+      "detectors": [
+        "ae"
+      ],
+      "rule": null,
+      "threshold": 0.25932443141937256,
+      "abstain": true,
+      "n_val_benign": 98
+    }
+  },
+  "candidats_val_recall_web_seq": {
+    "ae+transformer|max": 0.8422,
+    "ae+transformer|mean": 0.5691,
+    "ae+transformer|and": 0.5507,
+    "ae+transformer|fisher": 0.5818,
+    "ae+lstm|max": 0.8295,
+    "ae+lstm|mean": 0.5518,
+    "ae+lstm|and": 0.553,
+    "ae+lstm|fisher": 0.5599,
+    "ae+transformer+lstm|max": 0.8479,
+    "ae+transformer+lstm|mean": 0.5507,
+    "ae+transformer+lstm|and": 0.5507,
+    "ae+transformer+lstm|fisher": 0.5806,
+    "ae|-": 0.7949,
+    "transformer|-": 0.6014,
+    "lstm|-": 0.5887
+  }
+}
